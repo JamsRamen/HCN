@@ -80,8 +80,8 @@ class Queue {
 
 let consoleLog = undefined;
 
-function dist(x1, y1, x2, y2) {
-    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+function dist(pos1, pos2) {
+    return (pos1[0] - pos2[0]) * (pos1[0] - pos2[0]) + (pos1[1] - pos2[1]) * (pos1[1] - pos2[1]);
 }
 
 function mdist(x1, y1, x2, y2) {
@@ -96,7 +96,7 @@ function reverse(arr) {
         arr[start] = arr[end];
         arr[end] = temp;
         start++;
-        end++;
+        end--;
     }
 }
 
@@ -133,6 +133,26 @@ function findPossibleOpponentCastles(map, fuelMap, karboniteMap, knownCastleLoca
         }
     }
     return locations;
+}
+
+function findNearestMine(fuelMap, karboniteMap, location) {
+    const deltas = getDeltas(1);
+    const queue = new Queue();
+    const visited = {};
+    queue.pushBack(location);
+    while (queue.size() != 0) {
+        const currentLocation = queue.popFront();
+        if (fuelMap[currentLocation[0]][currentLocation[1]] || karboniteMap[currentLocation[0]][currentLocation[1]])
+            return currentLocation;
+        for (let i = 0; i < deltas.length; i++) {
+            const nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
+            if (nextLocation[0] >= 0 && nextLocation[0] < fuelMap.length && nextLocation[1] >= 0 && nextLocation[1] < fuelMap.length && visited[nextLocation] === undefined) {
+                queue.pushBack(nextLocation);
+                visited[nextLocation] = true;
+            }
+        }
+    }
+    return undefined;
 }
 
 function isPassableAndUnoccupied(location, map, robotMap) {
@@ -178,17 +198,58 @@ function getPathTowardsWithoutRobots(map, source, destination, movementSpeed) {
     if (parent[destination] === undefined)
         return undefined;
     let location = destination;
-    while (parent[location] != undefined) {
+    while (location != source) {
         path.push(location);
+        location = parent[location];
     }
     path.push(location);
     reverse(path);
-    consoleLog(path);
     return path;
 }
 
 function getPathTowardsWithRobots(map, robotMap, source, destination, movementSpeed) {
-    return undefined;
+    const deltas = getDeltas(movementSpeed);
+    const queue = new Queue();
+    const parent = {};
+    queue.pushBack(source);
+    while (queue.size() != 0) {
+        let currentLocation = queue.popFront();
+        if (currentLocation === destination)
+            break;
+        for (let i = 0; i < deltas.length; i++) {
+            let nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
+            if (nextLocation[0] >= 0 && nextLocation[0] < map.length && nextLocation[1] >= 0 && nextLocation[1] < map.length) {
+                if (nextLocation != source && parent[nextLocation] === undefined && map[nextLocation[0]][nextLocation[1]] && robotMap[nextLocation[0]][nextLocation[1]] <= 0) {
+                    parent[nextLocation] = currentLocation;
+                    queue.pushBack(nextLocation);
+                }
+            }
+        }
+    }
+    const path = [];
+    let location = destination;
+    if (parent[destination] === undefined) {
+        if (dist(source, destination) <= 2)
+            return undefined;
+        let tempDestination = undefined;
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                let newLocation = [destination[0] + i, destination[1] + j];
+                if (parent[newLocation] != undefined) {
+                    if (tempDestination === undefined || dist(tempDestination, source) > dist(newLocation, source))
+                        tempDestination = newLocation;
+                }
+            }
+        }
+        location = tempDestination;
+    }
+    while (location != source) {
+        path.push(location);
+        location = parent[location];
+    }
+    path.push(location);
+    reverse(path);
+    return path;
 }
  
 class Role {
@@ -209,30 +270,33 @@ class Role {
             this.currentPath = getPathTowardsWithoutRobots(context.map, [context.me.y, context.me.x], destination, SPECS.UNITS[context.me.unit].SPEED);
             this.currentPathIndex = 0;
         }
-        consoleLog(this.currentPath === undefined);
         if (this.currentPath === undefined) {
             return undefined;
         }
-        return context.move(0, 1);
         if (this.currentPathIndex === this.currentPath.length - 1) {
             return undefined;
         }
         if (isPassableAndUnoccupied(this.currentPath[this.currentPathIndex + 1], context.map, context.getVisibleRobotMap())) {
-            return context.move(this.currentPath[this.currentPathIndex + 1][1] - this.currentPath[this.currentPathIndex][1], this.currentPath[this.currentPathIndex + 1][0] - this.currentPath[this.currentPathIndex][0]);
+            this.currentPathIndex++;
+            return context.move(this.currentPath[this.currentPathIndex][1] - this.currentPath[this.currentPathIndex - 1][1], this.currentPath[this.currentPathIndex][0] - this.currentPath[this.currentPathIndex - 1][0]);
         }
         else {
-            let nextOpenLocation = undefined;
+            let nextOpenLocationIndex = this.currentPath.length - 1;
+            let nextOpenLocation = this.currentPath[nextOpenLocationIndex];
             for (let i = this.currentPathIndex + 1; i < this.currentPath.length; i++) {
-                if (isPassableAndUnoccupied(this.currentPath[i])) {
+                if (isPassableAndUnoccupied(this.currentPath[i], context.map, context.getVisibleRobotMap())) {
                     nextOpenLocation = this.currentPath[i];
+                    nextOpenLocationIndex = i;
                     break;
                 }
             }
             if (nextOpenLocation === undefined)
                 return undefined;
-            const miniPath = getPathTowardsWithRobots(contex.map, context.getVisibleRobotMap(), [context.me.y, context.me.x], nextOpenLocation, SPECS.UNITS[context.me.unit].SPEED);
+            const miniPath = getPathTowardsWithRobots(context.map, context.getVisibleRobotMap(), [context.me.y, context.me.x], nextOpenLocation, SPECS.UNITS[context.me.unit].SPEED);
             if (miniPath === undefined)
                 return undefined;
+            if (miniPath.length === 2 && miniPath[1] === nextOpenLocation)
+                this.currentPathIndex = nextOpenLocationIndex;
             return context.move(miniPath[1][1] - context.me.x, miniPath[1][0] - context.me.y);
         }
     }
@@ -242,6 +306,8 @@ class Castle extends Role {
     turn(context) {
         super.turn(context);
         // return context.buildUnit(SPECS.CRUSADER, 0, 1);
+        if (Math.random() < .5)
+            return context.buildUnit(0, SPECS.PILGRIM, 0, 1);
         return context.buildUnit(0, SPECS.CRUSADER, 0, 1);
     }
 }
@@ -249,6 +315,15 @@ class Castle extends Role {
 class Crusader extends Role {
     turn(context) {
         super.turn(context);
+        const robots = context.getVisibleRobots();
+        for (let i = 0; i < robots.length; i++) {
+            if (robots[i].team != context.me.team && robots[i].y != null) {
+                let d = dist([robots[i].y, robots[i].x], [context.me.y, context.me.x]);
+                if (d >= (SPECS.UNITS[context.me.unit].ATTACK_RADIUS)[0] && d <= (SPECS.UNITS[context.me.unit].ATTACK_RADIUS)[1]) {
+                    return context.attack(robots[i].x - context.me.x, robots[i].y - context.me.y);
+                }
+            }
+        }
         const castleLocations = [];
         for (let i = 0; i < this.knownUnits.length; i++) {
             if (this.knownUnits[i].unit === SPECS.CASTLE)
@@ -257,10 +332,6 @@ class Crusader extends Role {
         const opponentCastles = findPossibleOpponentCastles(context.map, context.fuel_map, context.karbonite_map, castleLocations);
         const castleToAttack = opponentCastles[Math.floor(Math.random() * opponentCastles.length)];
         return this.moveTowards(context, castleToAttack);
-        // return context.move(...getDirectionTowardsWithoutRobots(context.map, [context.me.y, context.me.x], castleToAttack));
-        // const choices = [[0, 1], [1, 0], [-1, 0], [0, -1]]
-        // const choice = choices[Math.floor(Math.random() * choices.length)]
-        // return context.move(...choice);
     }
 }
 
@@ -273,6 +344,8 @@ class Church extends Role {
 class Pilgrim extends Role {
     turn(context) {
         super.turn(context);
+        const mineLocation = findNearestMine(context.fuel_map, context.karbonite_map, [context.me.y, context.me.x]);
+        return this.moveTowards(context, mineLocation);
     }
 }
 
@@ -299,7 +372,7 @@ class MyRobot extends BCAbstractRobot {
             let signal = 0;
             const visibleRobots = this.getVisibleRobotMap();
             for (let i = 0; i < visibleRobots.length; i++) {
-                if (visibleRobots[i].unit === SPECS.CASTLE && dist(visibleRobots[i].x, visibleRobots[i].y, this.me.x, this.me.y) < 4) {
+                if (visibleRobots[i].unit === SPECS.CASTLE && dist([visibleRobots[i].x, visibleRobots[i].y], [this.me.x, this.me.y]) < 4) {
                     signal = visibleRobots[i].signal;
                 }
             }
@@ -342,4 +415,4 @@ class MyRobot extends BCAbstractRobot {
     }
 }
 
-// var robot = new MyRobot();
+var robot = new MyRobot();
