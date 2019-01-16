@@ -1,103 +1,13 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
 
-class QueueNode {
-    constructor(v) {
-        this.left = this.right = undefined;
-        this.val = v;
-    }
-}
-
-class Queue {
-    constructor() {
-        this.sz = 0;
-        this.front = undefined;
-        this.back = undefined;
-    }
-    pushFront(v) {
-        if (this.front === undefined) {
-            this.front = new QueueNode(v);
-            this.back = this.front;
-        }
-        else {
-            let newNode = new QueueNode(v);
-            newNode.right = this.front;
-            this.front.left = newNode;
-            this.front = newNode;
-        }
-        this.sz++;
-    }
-    pushBack(v) {
-        if (this.back === undefined) {
-            this.back = new QueueNode(v);
-            this.front = this.back;
-        }
-        else {
-            let newNode = new QueueNode(v);
-            newNode.left = this.back;
-            this.back.right = newNode;
-            this.back = newNode;
-        }
-        this.sz++;
-    }
-    popFront() {
-        if (this.front === undefined)
-            return undefined;
-        let res = this.front.val;
-        this.front = this.front.right;
-        if (this.front === undefined)
-            this.back = undefined;
-        else
-            this.front.left = undefined;
-        this.sz--;
-        return res;
-    }
-    popBack() {
-        if (this.back === undefined)
-            return undefined;
-        let res = this.back.val;
-        this.back = this.back.left;
-        if (this.back === undefined)
-            this.front = undefined;
-        else
-            this.back.right = undefined;
-        this.sz--;
-        return res;
-    }
-    peekFront() {
-        if (this.front === undefined)
-            return undefined;
-        return this.front.val;
-    }
-    peekBack() {
-        if (this.back === undefined)
-            return undefined;
-        return this.back.val;
-    }
-    size() {
-        return this.sz;
-    }
-}
-
 let consoleLog = undefined;
 
-function dist(pos1, pos2) {
-    return (pos1[0] - pos2[0]) * (pos1[0] - pos2[0]) + (pos1[1] - pos2[1]) * (pos1[1] - pos2[1]);
+function isPassableAndUnoccupied(location, map, robotMap) {
+    return map[location[0]][location[1]] && robotMap[location[0]][location[1]] <= 0;
 }
 
-function mdist(x1, y1, x2, y2) {
-    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-}
-
-function reverse(arr) {
-    let start = 0;
-    let end = arr.length - 1;
-    while (start < end) {
-        let temp = arr[start];
-        arr[start] = arr[end];
-        arr[end] = temp;
-        start++;
-        end--;
-    }
+function isMine(location, fuelMap, karboniteMap) {
+    return fuelMap[location[0]][location[1]] || karboniteMap[location[0]][location[1]];
 }
 
 function isVerticallySymmetric(map, fuelMap, karboniteMap) {
@@ -135,14 +45,14 @@ function findPossibleOpponentCastles(map, fuelMap, karboniteMap, knownCastleLoca
     return locations;
 }
 
-function findNearestMine(fuelMap, karboniteMap, location) {
-    const deltas = getDeltas(1);
+function findNearestMine(fuelMap, karboniteMap, location, movementSpeed) {
+    const deltas = getDeltas(movementSpeed);
     const queue = new Queue();
     const visited = {};
     queue.pushBack(location);
     while (queue.size() != 0) {
         const currentLocation = queue.popFront();
-        if (fuelMap[currentLocation[0]][currentLocation[1]] || karboniteMap[currentLocation[0]][currentLocation[1]])
+        if (isMine(location, fuelMap, karboniteMap))
             return currentLocation;
         for (let i = 0; i < deltas.length; i++) {
             const nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
@@ -155,25 +65,7 @@ function findNearestMine(fuelMap, karboniteMap, location) {
     return undefined;
 }
 
-function isPassableAndUnoccupied(location, map, robotMap) {
-    return map[location[0]][location[1]] && robotMap[location[0]][location[1]] <= 0;
-}
 
-function getDeltas(movementSpeed) {
-    let deltas = [];
-    for (let i = 0; i * i <= movementSpeed; i++) {
-        for (let j = 0; j * j <= movementSpeed; j++) {
-            if (i === 0 && j === 0) continue;
-            if (i * i + j * j <= movementSpeed) {
-                deltas.push([i, j]);
-                deltas.push([-i, j]);
-                deltas.push([i, -j]);
-                deltas.push([-i, -j]);
-            }
-        }
-    }
-    return deltas;
-}
 
 function getPathTowardsWithoutRobots(map, source, destination, movementSpeed) {
     const deltas = getDeltas(movementSpeed);
@@ -252,69 +144,18 @@ function getPathTowardsWithRobots(map, robotMap, source, destination, movementSp
     return path;
 }
  
-class Role {
-    constructor() {
-        this.knownUnits = [];
-        this.currentPath = undefined;
-        this.currentPathIndex = 0;
-    }
-    turn(context) {
-        const robots = context.getVisibleRobots();
-        for (let i = 0; i < robots.length; i++) {
-            this.knownUnits.push(Object.assign({}, robots[i]));
-        }
-        return undefined;
-    }
-    moveTowards(context, destination) {
-        if (this.currentPath === undefined) {
-            this.currentPath = getPathTowardsWithoutRobots(context.map, [context.me.y, context.me.x], destination, SPECS.UNITS[context.me.unit].SPEED);
-            this.currentPathIndex = 0;
-        }
-        if (this.currentPath === undefined) {
-            return undefined;
-        }
-        if (this.currentPathIndex === this.currentPath.length - 1) {
-            return undefined;
-        }
-        if (isPassableAndUnoccupied(this.currentPath[this.currentPathIndex + 1], context.map, context.getVisibleRobotMap())) {
-            this.currentPathIndex++;
-            return context.move(this.currentPath[this.currentPathIndex][1] - this.currentPath[this.currentPathIndex - 1][1], this.currentPath[this.currentPathIndex][0] - this.currentPath[this.currentPathIndex - 1][0]);
-        }
-        else {
-            let nextOpenLocationIndex = this.currentPath.length - 1;
-            let nextOpenLocation = this.currentPath[nextOpenLocationIndex];
-            for (let i = this.currentPathIndex + 1; i < this.currentPath.length; i++) {
-                if (isPassableAndUnoccupied(this.currentPath[i], context.map, context.getVisibleRobotMap())) {
-                    nextOpenLocation = this.currentPath[i];
-                    nextOpenLocationIndex = i;
-                    break;
-                }
-            }
-            if (nextOpenLocation === undefined)
-                return undefined;
-            const miniPath = getPathTowardsWithRobots(context.map, context.getVisibleRobotMap(), [context.me.y, context.me.x], nextOpenLocation, SPECS.UNITS[context.me.unit].SPEED);
-            if (miniPath === undefined)
-                return undefined;
-            if (miniPath.length === 2 && miniPath[1] === nextOpenLocation)
-                this.currentPathIndex = nextOpenLocationIndex;
-            return context.move(miniPath[1][1] - context.me.x, miniPath[1][0] - context.me.y);
-        }
-    }
-}
- 
 class Castle extends Role {
-    turn(context) {
-        super.turn(context);
+    turn() {
         // return context.buildUnit(SPECS.CRUSADER, 0, 1);
-        if (Math.random() < .5)
-            return context.buildUnit(0, SPECS.PILGRIM, 0, 1);
-        return context.buildUnit(0, SPECS.CRUSADER, 0, 1);
+        // if (Math.random() < .5)
+            return this.buildUnit(0, SPECS.PILGRIM);
+        // return context.buildUnit(0, SPECS.CRUSADER, 0, 1);
     }
 }
  
 class Crusader extends Role {
-    turn(context) {
-        super.turn(context);
+    turn() {
+        const context = this.context;
         const robots = context.getVisibleRobots();
         for (let i = 0; i < robots.length; i++) {
             if (robots[i].team != context.me.team && robots[i].y != null) {
@@ -331,33 +172,51 @@ class Crusader extends Role {
         }
         const opponentCastles = findPossibleOpponentCastles(context.map, context.fuel_map, context.karbonite_map, castleLocations);
         const castleToAttack = opponentCastles[Math.floor(Math.random() * opponentCastles.length)];
-        return this.moveTowards(context, castleToAttack);
+        return this.moveTowards(castleToAttack);
     }
 }
 
 class Church extends Role {
-    turn(context) {
-        super.turn(context);
+    turn() {
     }
 }
 
 class Pilgrim extends Role {
-    turn(context) {
-        super.turn(context);
-        const mineLocation = findNearestMine(context.fuel_map, context.karbonite_map, [context.me.y, context.me.x]);
-        return this.moveTowards(context, mineLocation);
+    turn() {
+        const context = this.context;
+        consoleLog(context.me.karbonite + " " + context.me.fuel);
+        if (context.me.karbonite * 2 > SPECS.UNITS[context.me.unit].KARBONITE_CAPACITY || context.me.fuel * 2 > SPECS.UNITS[context.me.unit].FUEL_CAPACITY) {
+            consoleLog("HAVE ENOUGH FUEL TO DEPOSIT");
+            const castleLocation = undefined;
+            for (let i = 0; i < this.knownUnits.length; i++) {
+                if (this.knownUnits[i].unit === SPECS.CASTLE) {
+                    let unitLocation = [this.knownUnits[i].y, this.knownUnits[i].x];
+                    if (castleLocation === undefined || dist(unitLocation, [context.me.y, context.me.x]) < dist(castleLocation, [context.me.y, context.me.x]))
+                        castleLocation = unitLocation;
+                }
+            }
+            if (rdist(castleLocation, [context.me.y, context.me.x]) <= 1)
+                return context.give(castleLocation[1] - context.me.x, castleLocation[0] - context.me.y, context.me.karbonite, context.me.fuel);
+            return this.moveTowards(castleLocation);
+        }
+        if (isMine([context.me.y, context.me.x], context.fuel_map, context.karbonite_map)) {
+            consoleLog("I AM MINING");
+            context.mine();
+        }
+        consoleLog("GOT TO FIND A MINE");
+        const mineLocation = findNearestMine(context.fuel_map, context.karbonite_map, [context.me.y, context.me.x], SPECS.UNITS[context.me.unit].MOVEMENT_SPEED);
+        consoleLog(mineLocation);
+        return this.moveTowards(mineLocation);
     }
 }
 
 class Prophet extends Role {
-    turn(context) {
-        super.turn(context);
+    turn() {
     }
 }
 
 class Preacher extends Role {
-    turn(context) {
-        super.turn(context);
+    turn() {
     }
 }
 
@@ -397,22 +256,11 @@ class MyRobot extends BCAbstractRobot {
                     break;
             }
         }
-        return this.unit.turn(this);
+        return this.unit.turnSetup(this);
     }
     buildUnit(signal, type, dx, dy) {
-        if ((this.me.unit === SPECS.CASTLE || this.me.unit === SPECS.CHURCH)
-            && this.me.x + dx >= 0 && this.me.x + dx < this.map.length
-            && this.me.y + dy >= 0 && this.me.y + dy < this.map.length
-            && Math.abs(dx) <= 1 && Math.abs(dy) <= 1
-            && this.map[this.me.y + dy][this.me.x + dx]
-            && this.getVisibleRobotMap()[this.me.y + dy][this.me.x + dx] === 0
-            && this.karbonite >= SPECS.UNITS[type].CONSTRUCTION_KARBONITE
-            && this.fuel >= SPECS.UNITS[type].CONSTRUCTION_FUEL) {
-            if (signal !== 0)
-                this.signal(signal, dx * dx + dy * dy);
-        }
-        return super.buildUnit(type, dx, dy);
+        
     }
 }
 
-var robot = new MyRobot();
+// var robot = new MyRobot();
