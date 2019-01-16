@@ -2,20 +2,48 @@
 class Cartography {
     constructor(map, karboniteMap, fuelMap, getVisibleRobotMap) {
         this.size = map.length;
-        this.isPassable = pos => map[pos.y][pos.x];
-        this.isKarboniteMine = pos => karboniteMap[pos.y][pos.x];
-        this.isFuelMine = pos => fuelMap[pos.y][pos.x];
-        this.robotMap = pos => getVisibleRobotMap()[pos.y][pos.x];
+        
+        const boundsCheck = this.boundsCheck;
+        this.isPassable = pos => {
+            boundsCheck();
+            return map[pos.y][pos.x];
+        };
+        this.isKarboniteMine = pos => {
+            boundsCheck();
+            return karboniteMap[pos.y][pos.x];
+        };
+        this.isFuelMine = pos => {
+            boundsCheck();
+            return fuelMap[pos.y][pos.x];
+        };
+        this.robotMap = pos => {
+            boundsCheck();
+            return getVisibleRobotMap()[pos.y][pos.x];
+        };
     }
+    
+    isInBounds(pos) {
+        return pos.x >= 0 && pos.x < this.size && 
+               pos.y >= 0 && pos.y < this.size;
+    }
+    boundsCheck() {
+        if (!boundsCheck(pos))
+            throw "pos is out of bounds";
+    }
+    
     isOccupied(pos) {
+        boundsCheck();
         return this.robotMap(pos) > 0;
     }
     isOpen(pos) {
+        boundsCheck();
         return !this.isOccupied(pos) && this.map(pos);
     }
     isMine(pos) {
+        boundsCheck();
         return this.isKarbonite(pos) || this.isFuelMine(pos);
     }
+    
     
     isSymmetricX () {
         for (let x = 0; x < this.size; x++) {
@@ -38,6 +66,8 @@ class Cartography {
         }
         return true;
     }
+    
+    
 }
 
 export default Cartography;
