@@ -1,3 +1,4 @@
+import { SPECS } from 'battlecode';
 import Util from './util.js';
 import Cartography from './cartography.js';
 import Point from './point.js';
@@ -14,6 +15,20 @@ class Role {
         // reference to MyRobot class (not meant to be accessed)
         this.context = context;
         this.cartography = new Cartography(this.context.map, this.context.karbonite_map, this.context.fuel_map, this.context.getVisibleRobotMap);
+
+        // constants from specs
+        this.CONSTRUCTION_KARBONITE = SPECS.UNITS[this.context.me.unit].CONSTRUCTION_KARBONITE;
+        this.CONSTRUCTION_FUEL = SPECS.UNITS[this.context.me.unit].CONSTRUCTION_FUEL;
+        this.KARBONITE_CAPACITY = SPECS.UNITS[this.context.me.unit].KARBONITE_CAPACITY;
+        this.FUEL_CAPACITY = SPECS.UNITS[this.context.me.unit].FUEL_CAPACITY;
+        this.SPEED = SPECS.UNITS[this.context.me.unit].SPEED;
+        this.FUEL_PER_MOVE = SPECS.UNITS[this.context.me.unit].FUEL_PER_MOVE;
+        this.STARTING_HP = SPECS.UNITS[this.context.me.unit].STARTING_HP;
+        this.VISION_RADIUS = SPECS.UNITS[this.context.me.unit].VISION_RADIUS;
+        this.ATTACK_DAMAGE = SPECS.UNITS[this.context.me.unit].ATTACK_DAMAGE;
+        this.ATTACK_RADIUS = SPECS.UNITS[this.context.me.unit].ATTACK_RADIUS;
+        this.ATTACK_FUEL_COST = SPECS.UNITS[this.context.me.unit].ATTACK_FUEL_COST;
+        this.DAMAGE_SPREAD = SPECS.UNITS[this.context.me.unit].DAMAGE_SPREAD;
     }
     // =================== override battlecode docs
     move(pos) {
