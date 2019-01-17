@@ -1,3 +1,6 @@
+/*
+ * point.js: represent a position on an xy plane
+ */
 
 class Point {
     constructor(x, y) {
@@ -22,6 +25,10 @@ class Point {
     // reflect over the line y=(size-1)/2
     reflectY(size) {
         return new Point(this.x, size - this.y - 1);
+    }
+    
+    toString() {
+        return "(" + this.x + ", " + this.y + ")";
     }
 }
 

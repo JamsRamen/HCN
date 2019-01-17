@@ -101,8 +101,29 @@ function findPathTowardsWithRobots(source, destination, movementSpeed, cartograp
     return path;
 }
 
+function findNearestMine(location, movementSpeed, cartography) {
+    const deltas = getCircle(movementSpeed);
+    const queue = new LinkedList();
+    const visited = {};
+    queue.pushBack(location);
+    while (queue.size() != 0) {
+        const currentLocation = queue.popFront();
+        if (cartography.isMine(currentLocation))
+            return currentLocation;
+        deltas.forEach(delta => {
+            const nextLocation = currentLocation.add(delta);
+            if (cartography.isInBounds(nextLocation) && visited[nextLocation] === undefined) {
+                queue.pushBack(nextLocation);
+                visited[nextLocation] = true;
+            }
+        });
+    }
+    return undefined;
+}
+
 export default {
     findPossibleOpponentCastles,
     findPathTowardsWithoutRobots,
-    findPathTowardsWithRobots
+    findPathTowardsWithRobots,
+    findNearestMine
 };
