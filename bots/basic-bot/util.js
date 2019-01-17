@@ -1,3 +1,8 @@
+/*
+ * util.js: generic utilities including distance and logging
+ */
+ 
+import Point from './point.js';
 
 let consoleLog = undefined;
 
@@ -37,14 +42,14 @@ function getCircle(distance, metric) {
     }
 
     let result = [];
-    for (let i = 0; metric([i, 0]) <= distance; i++) {
-        for (let j = 0; metric([i, j]) <= distance; j++) {
+    for (let i = 0; metric(new Point(i, 0)) <= distance; i++) {
+        for (let j = 0; metric(new Point(i, j)) <= distance; j++) {
             if (i === 0 && j === 0) continue;
             
-            result.push([i, j]);
-            result.push([-i, j]);
-            result.push([i, -j]);
-            result.push([-i, -j]);
+            result.push(new Point(i, j));
+            result.push(new Point(-i, j));
+            result.push(new Point(i, -j));
+            result.push(new Point(-i, -j));
         }
     }
     return result;
