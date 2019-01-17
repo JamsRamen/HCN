@@ -2,8 +2,11 @@ import { SPECS } from 'battlecode';
 import Util from './util.js';
 import Cartography from './cartography.js';
 import Point from './point.js';
+import Nav from './nav.js';
 
 const getCircle = Util.getCircle;
+const findPathTowardsWithoutRobots = Nav.findPathTowardsWithoutRobots;
+const findPathTowardsWithRobots = Nav.findPathTowardsWithRobots;
 
 class Role {
     constructor(context) {
@@ -114,42 +117,43 @@ class Role {
 
         return this.decide();
     }
-    // moveTowards(destination) {
-    //     const context = this.context;
-    //     if (this.currentPath === undefined) {
-    //         this.currentPath = getPathTowardsWithoutRobots(context.map, [context.me.y, context.me.x], destination, SPECS.UNITS[context.me.unit].SPEED);
-    //         this.currentPathIndex = 0;
-    //     }
-    //     if (this.currentPath === undefined) {
-    //         return undefined;
-    //     }
-    //     if (this.currentPathIndex === this.currentPath.length - 1) {
-    //         return undefined;
-    //     }
-    //     if (isPassableAndUnoccupied(this.currentPath[this.currentPathIndex + 1], context.map, context.getVisibleRobotMap())) {
-    //         this.currentPathIndex++;
-    //         return context.move(this.currentPath[this.currentPathIndex][1] - this.currentPath[this.currentPathIndex - 1][1], this.currentPath[this.currentPathIndex][0] - this.currentPath[this.currentPathIndex - 1][0]);
-    //     }
-    //     else {
-    //         let nextOpenLocationIndex = this.currentPath.length - 1;
-    //         let nextOpenLocation = this.currentPath[nextOpenLocationIndex];
-    //         for (let i = this.currentPathIndex + 1; i < this.currentPath.length; i++) {
-    //             if (isPassableAndUnoccupied(this.currentPath[i], context.map, context.getVisibleRobotMap())) {
-    //                 nextOpenLocation = this.currentPath[i];
-    //                 nextOpenLocationIndex = i;
-    //                 break;
-    //             }
-    //         }
-    //         if (nextOpenLocation === undefined)
-    //             return undefined;
-    //         const miniPath = getPathTowardsWithRobots(context.map, context.getVisibleRobotMap(), [context.me.y, context.me.x], nextOpenLocation, SPECS.UNITS[context.me.unit].SPEED);
-    //         if (miniPath === undefined)
-    //             return undefined;
-    //         if (miniPath.length === 2 && miniPath[1] === nextOpenLocation)
-    //             this.currentPathIndex = nextOpenLocationIndex;
-    //         return context.move(miniPath[1][1] - context.me.x, miniPath[1][0] - context.me.y);
-    //     }
-    // }
+    moveTowards(destination) {
+        console.log("Is path found?: " + (this.currentPath === undefined));
+        // return undefined;
+        if (this.currentPath === undefined) {
+            this.currentPath = findPathTowardsWithoutRobots(this.me.pos, destination, this.SPEED, this.cartography);
+            this.currentPathIndex = 0;
+        }
+        if (this.currentPath === undefined) {
+            return undefined;
+        }
+        if (this.currentPathIndex === this.currentPath.length - 1) {
+            return undefined;
+        }
+        if (cartography.isOpen(this.currentPath[this.currentPathIndex + 1])) {
+            this.currentPathIndex++;
+            return this.move(this.currentPath[this.currentPathIndex]);
+        }
+        else {
+            let nextOpenLocationIndex = this.currentPath.length - 1;
+            let nextOpenLocation = this.currentPath[nextOpenLocationIndex];
+            for (let i = this.currentPathIndex + 1; i < this.currentPath.length; i++) {
+                if (cartography.isOpen(this.currentPath[i])) {
+                    nextOpenLocation = this.currentPath[i];
+                    nextOpenLocationIndex = i;
+                    break;
+                }
+            }
+            if (nextOpenLocation === undefined)
+                return undefined;
+            const miniPath = findPathTowardsWithRobots(this.me.pos, nextOpenLocation, this.SPEED, cartography);
+            if (miniPath === undefined)
+                return undefined;
+            if (miniPath.length === 2 && miniPath[1] === nextOpenLocation)
+                this.currentPathIndex = nextOpenLocationIndex;
+            return this.move(miniPath[1]);
+        }
+    }
 }
 
 export default Role;

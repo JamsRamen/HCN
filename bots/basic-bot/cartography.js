@@ -1,26 +1,27 @@
 /*
  * cartography.js: responsible for low-level map functions, including map access and bounds checking bounds
  */
+ import Point from './point.js';
 
 class Cartography {
     constructor(map, karboniteMap, fuelMap, getVisibleRobotMap) {
         this.size = map.length;
-        
-        const boundsCheck = this.boundsCheck;
+
+        const _this = this;
         this.isPassable = pos => {
-            boundsCheck();
+            _this.boundsCheck(pos);
             return map[pos.y][pos.x];
         };
         this.isKarboniteMine = pos => {
-            boundsCheck();
+            _this.boundsCheck(pos);
             return karboniteMap[pos.y][pos.x];
         };
         this.isFuelMine = pos => {
-            boundsCheck();
+            _this.boundsCheck(pos);
             return fuelMap[pos.y][pos.x];
         };
         this.robotMap = pos => {
-            boundsCheck();
+            _this.boundsCheck(pos);
             return getVisibleRobotMap()[pos.y][pos.x];
         };
     }
@@ -29,41 +30,41 @@ class Cartography {
         return pos.x >= 0 && pos.x < this.size && 
                pos.y >= 0 && pos.y < this.size;
     }
-    boundsCheck() {
-        if (!boundsCheck(pos))
+    boundsCheck(pos) {
+        if (!this.isInBounds(pos))
             throw "pos is out of bounds";
     }
     
     isOccupied(pos) {
-        boundsCheck();
+        this.boundsCheck(pos);
         return this.robotMap(pos) > 0;
     }
     isOpen(pos) {
-        boundsCheck();
+        this.boundsCheck(pos);
         return !this.isOccupied(pos) && this.map(pos);
     }
     isMine(pos) {
-        boundsCheck();
+        this.boundsCheck(pos);
         return this.isKarbonite(pos) || this.isFuelMine(pos);
     }
     
     
-    isSymmetricX () {
+    isSymmetricX() {
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y * 2 < this.size; y++) {
-                pos = new Point(x, y);
-                if (this.isPassable(pos) != this.isPassible(pos.reflectX(this.size)))
+                const pos = new Point(x, y);
+                if (this.isPassable(pos) != this.isPassable(pos.reflectX(this.size)))
                     return false;
             }
         }
         return true;
     }
 
-    isSymmetricY () {
+    isSymmetricY() {
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y * 2 < this.size; y++) {
-                pos = new Point(x, y);
-                if (this.isPassable(pos) != this.isPassible(pos.reflectY(this.size)))
+                const pos = new Point(x, y);
+                if (this.isPassable(pos) != this.isPassable(pos.reflectY(this.size)))
                     return false;
             }
         }

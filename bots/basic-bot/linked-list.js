@@ -1,5 +1,5 @@
 
-class LinkedList {
+class LinkedListNode {
     constructor(v) {
         this.left = this.right = undefined;
         this.val = v;
@@ -14,11 +14,11 @@ class LinkedList {
     }
     pushFront(v) {
         if (this.front === undefined) {
-            this.front = new QueueNode(v);
+            this.front = new LinkedListNode(v);
             this.back = this.front;
         }
         else {
-            let newNode = new QueueNode(v);
+            let newNode = new LinkedListNode(v);
             newNode.right = this.front;
             this.front.left = newNode;
             this.front = newNode;
@@ -27,11 +27,11 @@ class LinkedList {
     }
     pushBack(v) {
         if (this.back === undefined) {
-            this.back = new QueueNode(v);
+            this.back = new LinkedListNode(v);
             this.front = this.back;
         }
         else {
-            let newNode = new QueueNode(v);
+            let newNode = new LinkedListNode(v);
             newNode.left = this.back;
             this.back.right = newNode;
             this.back = newNode;

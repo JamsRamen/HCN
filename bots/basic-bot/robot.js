@@ -9,7 +9,6 @@ import Crusader from './crusader.js';
 import Prophet from './prophet.js';
 import Preacher from './preacher.js';
 
-const setConsoleLog = Util.setConsoleLog;
 const norm = Util.norm;
 
 // function isPassableAndUnoccupied(location, map, robotMap) {
@@ -94,56 +93,13 @@ const norm = Util.norm;
 //     return path;
 // }
 
-// function getPathTowardsWithRobots(map, robotMap, source, destination, movementSpeed) {
-//     const deltas = getDeltas(movementSpeed);
-//     const queue = new Queue();
-//     const parent = {};
-//     queue.pushBack(source);
-//     while (queue.size() != 0) {
-//         let currentLocation = queue.popFront();
-//         if (currentLocation === destination)
-//             break;
-//         for (let i = 0; i < deltas.length; i++) {
-//             let nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
-//             if (nextLocation[0] >= 0 && nextLocation[0] < map.length && nextLocation[1] >= 0 && nextLocation[1] < map.length) {
-//                 if (nextLocation != source && parent[nextLocation] === undefined && map[nextLocation[0]][nextLocation[1]] && robotMap[nextLocation[0]][nextLocation[1]] <= 0) {
-//                     parent[nextLocation] = currentLocation;
-//                     queue.pushBack(nextLocation);
-//                 }
-//             }
-//         }
-//     }
-//     const path = [];
-//     let location = destination;
-//     if (parent[destination] === undefined) {
-//         if (dist(source, destination) <= 2)
-//             return undefined;
-//         let tempDestination = undefined;
-//         for (let i = -1; i <= 1; i++) {
-//             for (let j = -1; j <= 1; j++) {
-//                 let newLocation = [destination[0] + i, destination[1] + j];
-//                 if (parent[newLocation] != undefined) {
-//                     if (tempDestination === undefined || dist(tempDestination, source) > dist(newLocation, source))
-//                         tempDestination = newLocation;
-//                 }
-//             }
-//         }
-//         location = tempDestination;
-//     }
-//     while (location != source) {
-//         path.push(location);
-//         location = parent[location];
-//     }
-//     path.push(location);
-//     reverse(path);
-//     return path;
-// }
+
 
 class MyRobot extends BCAbstractRobot {
     constructor() {
         super();
         this.unit = null;
-        setConsoleLog(val => this.log(val));
+        global.consoleLog = v => this.log(v);
     }
     turn() {
         if (this.me.turn === 1) {

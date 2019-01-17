@@ -4,12 +4,6 @@
  
 import Point from './point.js';
 
-let consoleLog = undefined;
-
-function setConsoleLog(c) {
-    consoleLog = c;
-}
-
 // Euclidean distance squared
 function norm(pos1, pos2) {
     if (pos2 === undefined) {
@@ -71,7 +65,5 @@ function reverse(arr) {
 export default {
     norm, mdist, cdist,
     reverse,
-    getCircle,
-    setConsoleLog,
-    consoleLog
+    getCircle
 };
