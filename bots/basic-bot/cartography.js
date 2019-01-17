@@ -1,5 +1,5 @@
 /*
- *  Cartography: responsible for low-level map functions, including map access and bounds checking bounds
+ * cartography.js: responsible for low-level map functions, including map access and bounds checking bounds
  */
 
 class Cartography {
