@@ -1,5 +1,19 @@
 /*
  * point.js: represent a position on an xy plane
+ * 
+ * class Point:
+ * variables:
+ *      this.x
+ *      this.y
+ *
+ * functions:
+ *      Point(x=0, y=0)
+ *      add(other)
+ *          return result of vector addition (this + other)
+ *      sub(other)
+ *          return result of vector subtraction (this - other)
+ *      scale(scalar)
+ *          returns result of scalar-vector multiplication (scalar * this)
  */
 
 class Point {
@@ -16,6 +30,8 @@ class Point {
     scale(scalar) {
         return new Point(this.x * scalar, this.y * scalar); 
     }
+    
+    // move following functions to cartography
     
     // reflect over the line x=(size-1)/2
     reflectX(size) {
