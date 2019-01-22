@@ -43,9 +43,15 @@ class Role {
     give(pos, karbonite, fuel) {
         return this.context.give(pos.x - this.me.pos.x, pos.y - this.me.pos.y, karbonite, fuel);
     }
-    // giveAuto() {
-    //     return undefined;
-    // }
+    giveAuto() {
+        var result = undefined;
+        getCircle(2).foreach(delta => {
+            // if (pos.add(delta) is a castle)
+            //     result = this.context.give(delta.x, delta.y, karbonite, fuel);
+        });
+        
+        return result;
+    }
     attack(pos) {
         return this.context.attack(pos.x - this.me.pos.x, pos.y - this.me.pos.y);
     }
