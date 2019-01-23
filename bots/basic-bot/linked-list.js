@@ -1,3 +1,6 @@
+/*
+ * linked-list.js: doubly linked linear list data structure
+ */
 
 class LinkedListNode {
     constructor(v) {
