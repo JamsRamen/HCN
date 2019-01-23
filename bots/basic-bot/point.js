@@ -13,7 +13,9 @@ class Point {
      * @param {number} [y=0] - y-coordinate
      */
     constructor(x, y) {
+        /** @instance */
         this.x = (x === undefined ? 0 : x);
+        /** @instance */
         this.y = (y === undefined ? 0 : y);
     }
     
