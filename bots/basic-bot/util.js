@@ -4,7 +4,11 @@
  
 import Point from './point.js';
 
-// Euclidean distance squared
+/**
+ * @param {Point} pos1
+ * @param {Point} [pos2=(0, 0)]
+ * @return {number} Squared Euclidean distance
+ */
 function norm(pos1, pos2) {
     if (pos2 === undefined) {
         pos2 = new Point();
@@ -12,7 +16,11 @@ function norm(pos1, pos2) {
     return Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2);
 }
 
-// Manhattan distance
+/**
+ * @param {Point} pos1
+ * @param {Point} [pos2=(0, 0)]
+ * @return {number} Manhattan distance (sum of x difference and y difference)
+ */
 function mdist(pos1, pos2) {
     if (pos2 === undefined) {
         pos2 = new Point();
@@ -20,7 +28,11 @@ function mdist(pos1, pos2) {
     return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
 }
 
-// Chebyshev distance
+/**
+ * @param {Point} pos1
+ * @param {Point} [pos2=(0, 0)]
+ * @return {number} Chebyshev distance (maximum of x difference and y difference)
+ */
 function cdist(pos1, pos2) {
     if (pos2 === undefined) {
         pos2 = new Point();
@@ -28,8 +40,12 @@ function cdist(pos1, pos2) {
     return Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
 }
 
-// return all positions within distance from origin by metric given (norm by default)
-// excluding (0, 0)
+/**
+ * Return an array of all lattice points within a given distance of the origin, excluding (0, 0)
+ * @param {number} distance
+ * @param [metric=norm] the distance metric used
+ * @return {Point[]} an array of all points described above
+ */
 function getCircle(distance, metric) {
     if (metric === undefined) {
         metric = norm;
@@ -49,7 +65,10 @@ function getCircle(distance, metric) {
     return result;
 }
 
-// reverse arr in place
+/**
+ * Reverse a given array in place
+ * @param {*[]} arr - the array to reverse
+ */
 function reverse(arr) {
     let start = 0;
     let end = arr.length - 1;
