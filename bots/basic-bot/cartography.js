@@ -1,10 +1,8 @@
 /*
  * cartography.js: responsible for low-level map functions, including map access and bounds checking bounds
- *
- * class Cartography:
- * variables:
- *      none
- *  
+ */
+
+/*
  * functions:
  *      Cartography(map, karboniteMap, fuelMap, getVisibleRobotMap)
  *          arguments are from BCAbstractRobot
@@ -40,29 +38,62 @@
 
 import Point from './point.js';
 
+/**
+ * Provides basic map functionality
+ * @class
+ */
 class Cartography {
+    /**
+     * @constructor
+     * @param map - 
+     */
     constructor(map, karboniteMap, fuelMap, getVisibleRobotMap) {
+        /** @instance */
         this.size = map.length;
 
         const _this = this;
+        
+        /**
+         * @param {Point} pos - the position of inquiry
+         * @return {boolean} true if the square at pos is passable, false otherwise
+         */
         this.isPassable = pos => {
             _this.boundsCheck(pos);
             return map[pos.y][pos.x];
         };
+        
+        /**
+         * @param {Point} pos - the position of inquiry
+         * @return {boolean} true if the square at pos is a karbonite mine, false otherwise
+         */
         this.isKarboniteMine = pos => {
             _this.boundsCheck(pos);
             return karboniteMap[pos.y][pos.x];
         };
+        
+        /**
+         * @param {Point} pos - the position of inquiry
+         * @return {boolean} true if the square at pos is a fuel mine, false otherwise
+         */
         this.isFuelMine = pos => {
             _this.boundsCheck(pos);
             return fuelMap[pos.y][pos.x];
         };
+        
+        /**
+         * @param {Point} pos - the position of inquiry
+         * @return {number} -1 if pos is not visible, 0 if pos contains no robots, the id of the robot at pos otherwise
+         */
         this.robotMap = pos => {
             _this.boundsCheck(pos);
             return getVisibleRobotMap()[pos.y][pos.x];
         };
     }
     
+    /*
+     * @param {Point} pos - the position of inquiry
+     * @return {boolean} true if pos is within the bounds of the map, false otherwise
+     */
     isInBounds(pos) {
         return pos.x >= 0 && pos.x < this.size && 
                pos.y >= 0 && pos.y < this.size;
@@ -71,6 +102,7 @@ class Cartography {
         if (!this.isInBounds(pos))
             throw "pos is out of bounds";
     }
+    
     
     isOccupied(pos) {
         this.boundsCheck(pos);
