@@ -4,11 +4,9 @@
 
 /**
  * Represents a position on the xy plane
- * @class
  */
 class Point {
     /**
-     * @constructor
      * @param {number} [x=0] - x-coordinate
      * @param {number} [y=0] - y-coordinate
      */
