@@ -2,40 +2,6 @@
  * cartography.js: responsible for low-level map functions, including map access and bounds checking bounds
  */
 
-/*
- * functions:
- *      Cartography(map, karboniteMap, fuelMap, getVisibleRobotMap)
- *          arguments are from BCAbstractRobot
- *
- *      isPassable(pos)
- *          returns true if square at pos is passable, false otherwise
- *      isKarboniteMine(pos)
- *          returns true if square at pos is a karbonite mine, false otherwise
- *      isFuelMine(pos)
- *          returns true if square at pos is a fuel mine, false otherwise
- *      isOccupied(pos)
- *          returns true if there is known to be a robot at pos, false otherwise
- *      isOpen(pos)
- *          returns true if pos is passable and not occupied, false otherwise
- *      isMine(pos)
- *          returns true if square at pos is a mine, false otherwise
- *      
- *      robotMap(pos)
- *          returns -1 if pos is out of site, 0 if pos contains no robot, or the id of the robot at pos
- *
- *      isInBounds(pos)
- *          returns true if pos is in the bounds of the map
- *
- *      reflectX(pos)
- *          return the reflection of pos over the central x-axis of the map
- *      reflectY(pos)
- *          return the reflection of pos over the central y-axis of the map
- *      isSymmetricX()
- *          returns true if the map is symmetric over the central x-axis
- *      isSymmetricX()
- *          returns true if the map is symmetric over the central y-axis
- */
-
 import Point from './point.js';
 
 /**
@@ -45,7 +11,10 @@ import Point from './point.js';
 class Cartography {
     /**
      * @constructor
-     * @param map - 
+     * @param map - from BCAbstractRobot
+     * @param karboniteMap - from BCAbstractRobot
+     * @param fuelMap - from BCAbstractRobot
+     * @param getVisibleRobotMap - from BCAbstractRobot
      */
     constructor(map, karboniteMap, fuelMap, getVisibleRobotMap) {
         /** @instance */
@@ -90,7 +59,7 @@ class Cartography {
         };
     }
     
-    /*
+    /**
      * @param {Point} pos - the position of inquiry
      * @return {boolean} true if pos is within the bounds of the map, false otherwise
      */
@@ -103,25 +72,42 @@ class Cartography {
             throw "pos is out of bounds";
     }
     
-    
+    /**
+     * @param {Point} pos - the position of inquiry
+     * @return {boolean} true if the square at pos is known to be occupied by a robot, false otherwise
+     */
     isOccupied(pos) {
         this.boundsCheck(pos);
         return this.robotMap(pos) > 0;
     }
+    
+    /**
+     * @param {Point} pos - the position of inquiry
+     * @return {boolean} true if the square at pos is unoccupied and passable, false otherwise
+     */
     isOpen(pos) {
         this.boundsCheck(pos);
         return !this.isOccupied(pos) && this.map(pos);
     }
+    
+    /**
+     * @param {Point} pos - the position of inquiry
+     * @return {boolean} true if the square at pos is a mine, false otherwise
+     */
     isMine(pos) {
         this.boundsCheck(pos);
         return this.isKarbonite(pos) || this.isFuelMine(pos);
     }
     
-    // add the following functions here
+    /** @todo add the following functions here */
     // reflectX(pos)
     // reflectY(pos)
     
-    // store results of these two functions
+    /** @todo store results of these two functions */
+    
+    /**
+     * @return {boolean} true if the map is symmetric over the central x-axis, false otherwise
+     */
     isSymmetricX() {
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y * 2 < this.size; y++) {
@@ -132,7 +118,10 @@ class Cartography {
         }
         return true;
     }
-
+    
+    /**
+     * @return {boolean} true if the map is symmetric over the central y-axis, false otherwise
+     */
     isSymmetricY() {
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y * 2 < this.size; y++) {
