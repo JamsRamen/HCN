@@ -1,37 +1,47 @@
 /*
- * point.js: represent a position on an xy plane
- * 
- * class Point:
- * variables:
- *      this.x
- *      this.y
- *
- * functions:
- *      Point(x=0, y=0)
- *      add(other)
- *          return result of vector addition (this + other)
- *      sub(other)
- *          return result of vector subtraction (this - other)
- *      scale(scalar)
- *          returns result of scalar-vector multiplication (scalar * this)
+ * point.js: represent a position on the xy plane
  */
 
+/**
+ * Represents a position on the xy plane
+ * @class
+ */
 class Point {
+    /**
+     * @constructor
+     * @param {number} [x=0] - x-coordinate
+     * @param {number} [y=0] - y-coordinate
+     */
     constructor(x, y) {
         this.x = (x === undefined ? 0 : x);
         this.y = (y === undefined ? 0 : y);
     }
+    
+    /**
+     * @param {Point} other - the other addend
+     * @return {Point} result of vector addition (this + other)
+     */
     add(other) {
         return new Point(this.x + other.x, this.y + other.y);
     }
+    /**
+     * @param {Point} other - the subtrahend
+     * @return {Point} result of vector subtraction (this - other)
+     */
     sub(other) {
         return new Point(this.x - other.x, this.y - other.y);
     }
+    
+    /**
+     * @param {number} scalar - the scale factor
+     * @return {Point} result of scalar-vector multiplication (scalar * this)
+     */
     scale(scalar) {
         return new Point(this.x * scalar, this.y * scalar); 
     }
     
-    // move following functions to cartography
+    
+    /** @todo move following functions to cartography */
     
     // reflect over the line x=(size-1)/2
     reflectX(size) {
@@ -43,6 +53,9 @@ class Point {
         return new Point(this.x, size - this.y - 1);
     }
     
+    /**
+     * @return {String} String representation of this Point, formatted "(x, y)"
+     */
     toString() {
         return "(" + this.x + ", " + this.y + ")";
     }
