@@ -9,7 +9,12 @@ import Point from './point.js';
 
 const getCircle = Util.getCircle;
 
+let currentKnownCastleLocations = undefined;
+let possibleOpponentCastles = undefined;
+
 function findPossibleOpponentCastles(knownCastleLocations, cartography) {
+    if (possibleOpponentCastles != undefined && currentKnownCastleLocations === knownCastleLocations)
+        return possibleOpponentCastles;
     let locations = [];
     if (cartography.isSymmetricX()) {
         for (let i = 0; i < knownCastleLocations.length; i++) {
@@ -21,84 +26,40 @@ function findPossibleOpponentCastles(knownCastleLocations, cartography) {
             locations.push(cartography.reflectY(knownCastleLocations[i]));
         }
     }
+    possibleOpponentCastles = locations;
+    currentKnownCastleLocations = knownCastleLocations;
     return locations;
 }
 
-function findPathTowardsWithoutRobots(source, destination, movementSpeed, cartography) {
-    const deltas = getCircle(movementSpeed);
-    const queue = new LinkedList();
-    const parent = {};
-    queue.pushBack(source);
-    while (queue.size() != 0) {
-        const currentLocation = queue.popFront();
-        if (currentLocation === destination)
-            break;
-        for (let i = 0; i < deltas.length; i++) {
-            const nextLocation = new Point(currentLocation.x + deltas[i].x, currentLocation.y + deltas[i].y);
-            if (cartography.isInBounds(nextLocation)) {
-                if (nextLocation != source && !parent[nextLocation] && cartography.isPassable(nextLocation)) {
-                    parent[nextLocation] = currentLocation;
-                    queue.pushBack(nextLocation);
-                }
-            }
-        }
-    }
-    const path = [];
-    if (parent[destination] === undefined)
-        return undefined;
-    let location = destination;
-    while (location != source) {
-        path.push(location);
-        location = parent[location];
-    }
-    path.push(location);
-    reverse(path);
-    return path;
-}
+let currentDestination = undefined;
+let currentResultMap = undefined;
 
-function findPathTowardsWithRobots(source, destination, movementSpeed, cartography) {
+function findPassablePathsFrom(location, movementSpeed, cartography) {
+    consoleLog("FINDING PATHS");
+    if (currentDestination === location) {
+        consoleLog("USING CACHE");
+        return currentResultMap;
+    }
     const deltas = getCircle(movementSpeed);
     const queue = new LinkedList();
-    const parent = {};
-    queue.pushBack(source);
+    const result = {};
+    queue.pushBack({location, dist: 0});
+    result[location] = {next: undefined, dist: 0};
     while (queue.size() != 0) {
-        const currentLocation = queue.popFront();
-        if (currentLocation === destination)
-            break;
-        for (let i = 0; i < deltas.length; i++) {
-            const nextLocation = new Point(currentLocation.x + deltas[i].x, currentLocation.y + deltas[i].y);
-            if (cartography.isInBounds(nextLocation)) {
-                if (nextLocation != source && parent[nextLocation] === undefined && cartography.isOpen(nextLocation)) {
-                    parent[nextLocation] = currentLocation;
-                    queue.pushBack(nextLocation);
-                }
+        const currentNode = queue.popFront();
+        const currentLocation = currentNode.location;
+        const currentDist = currentNode.dist;
+        deltas.forEach(delta => {
+            const nextLocation = currentLocation.add(delta);
+            if (cartography.isInBounds(nextLocation) && cartography.isPassable(nextLocation) && !result[nextLocation]) {
+                queue.pushBack({location: nextLocation, dist: currentDist + 1});
+                result[nextLocation] = {next: currentLocation, dist: currentDist + 1};
             }
-        }
+        });
     }
-    const path = [];
-    let location = destination;
-    if (parent[destination] === undefined) {
-        if (norm(source, destination) <= 2)
-            return undefined;
-        let tempDestination = undefined;
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                const newLocation = new Point(destination.x + i, destination.y + j);
-                if (parent[newLocation] != undefined) {
-                    if (tempDestination === undefined || norm(tempDestination, source) > norm(newLocation, source))
-                        tempDestination = newLocation;
-                }
-            }
-        }
-        location = tempDestination;
-    }
-    while (location != source) {
-        path.push(location);
-        location = parent[location];
-    }
-    path.push(location);
-    reverse(path);
-    return path;
+    currentDestination = location;
+    currentResultMap = result;
+    return result;
 }
 
 function findNearestMine(location, movementSpeed, cartography) {
@@ -123,7 +84,6 @@ function findNearestMine(location, movementSpeed, cartography) {
 
 export default {
     findPossibleOpponentCastles,
-    findPathTowardsWithoutRobots,
-    findPathTowardsWithRobots,
+    findPassablePathsFrom,
     findNearestMine
 };

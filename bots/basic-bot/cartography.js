@@ -99,23 +99,38 @@ class Cartography {
         return this.isKarbonite(pos) || this.isFuelMine(pos);
     }
     
-    /** @todo add the following functions here */
-    // reflectX(pos)
-    // reflectY(pos)
+    /**
+     * @param {Point} pos - the position to be reflected
+     * @return {Point} pos reflected over X
+     */
+    reflectX(pos) {
+        return new Point(this.size - pos.x - 1, pos.y);
+    }
     
-    /** @todo store results of these two functions */
+    /**
+     * @param {Point} pos - the position to be reflected
+     * @return {Point} pos reflect over Y
+     */
+    reflectY(pos) {
+        return new Point(pos.x, this.size - pos.y - 1);
+    }
     
     /**
      * @return {boolean} true if the map is symmetric over the central x-axis, false otherwise
      */
     isSymmetricX() {
+        if (this.symmetricXResult != undefined)
+            return this.symmetricXResult;
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y * 2 < this.size; y++) {
                 const pos = new Point(x, y);
-                if (this.isPassable(pos) != this.isPassable(pos.reflectX(this.size)))
+                if (this.isPassable(pos) != this.isPassable(this.reflectX(pos))) {
+                    this.symmetricXResult = false;
                     return false;
+                }
             }
         }
+        this.symmetricXResult = true;
         return true;
     }
     
@@ -123,13 +138,18 @@ class Cartography {
      * @return {boolean} true if the map is symmetric over the central y-axis, false otherwise
      */
     isSymmetricY() {
+        if (this.symmetricYResult != undefined)
+            return this.symmetricYResult;
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y * 2 < this.size; y++) {
                 const pos = new Point(x, y);
-                if (this.isPassable(pos) != this.isPassable(pos.reflectY(this.size)))
+                if (this.isPassable(pos) != this.isPassable(this.reflectY(pos))) {
+                    this.symmetricYResult = false;
                     return false;
+                }
             }
         }
+        this.symmetricYResult = true;
         return true;
     }
     

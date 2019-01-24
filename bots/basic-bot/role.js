@@ -5,8 +5,7 @@ import Point from './point.js';
 import Nav from './nav.js';
 
 const getCircle = Util.getCircle;
-const findPathTowardsWithoutRobots = Nav.findPathTowardsWithoutRobots;
-const findPathTowardsWithRobots = Nav.findPathTowardsWithRobots;
+const findPassablePathsFrom = Nav.findPassablePathsFrom;
 
 class Role {
     constructor(context) {
@@ -124,41 +123,11 @@ class Role {
         return this.decide();
     }
     moveTowards(destination) {
-        console.log("Is path found?: " + (this.currentPath === undefined));
-        // return undefined;
-        if (this.currentPath === undefined) {
-            this.currentPath = findPathTowardsWithoutRobots(this.me.pos, destination, this.SPEED, this.cartography);
-            this.currentPathIndex = 0;
-        }
-        if (this.currentPath === undefined) {
-            return undefined;
-        }
-        if (this.currentPathIndex === this.currentPath.length - 1) {
-            return undefined;
-        }
-        if (cartography.isOpen(this.currentPath[this.currentPathIndex + 1])) {
-            this.currentPathIndex++;
-            return this.move(this.currentPath[this.currentPathIndex]);
-        }
-        else {
-            let nextOpenLocationIndex = this.currentPath.length - 1;
-            let nextOpenLocation = this.currentPath[nextOpenLocationIndex];
-            for (let i = this.currentPathIndex + 1; i < this.currentPath.length; i++) {
-                if (cartography.isOpen(this.currentPath[i])) {
-                    nextOpenLocation = this.currentPath[i];
-                    nextOpenLocationIndex = i;
-                    break;
-                }
-            }
-            if (nextOpenLocation === undefined)
-                return undefined;
-            const miniPath = findPathTowardsWithRobots(this.me.pos, nextOpenLocation, this.SPEED, cartography);
-            if (miniPath === undefined)
-                return undefined;
-            if (miniPath.length === 2 && miniPath[1] === nextOpenLocation)
-                this.currentPathIndex = nextOpenLocationIndex;
-            return this.move(miniPath[1]);
-        }
+        const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
+        const nextPosition = resultMap[this.me.pos];
+        // if (this.cartography.isOpen(nextPosition))
+            // return this.move(new Point(nextPosition).add(this.me.pos));
+        return this.move(new Point(0, 1).add(this.me.pos));
     }
 }
 

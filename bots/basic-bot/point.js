@@ -40,19 +40,6 @@ class Point {
         return new Point(this.x * scalar, this.y * scalar); 
     }
     
-    
-    /** @todo move following functions to cartography */
-    
-    // reflect over the line x=(size-1)/2
-    reflectX(size) {
-        return new Point(size - this.x - 1, this.y);
-    }
-    
-    // reflect over the line y=(size-1)/2
-    reflectY(size) {
-        return new Point(this.x, size - this.y - 1);
-    }
-    
     /**
      * @return {String} String representation of this Point, formatted "(x, y)"
      */
