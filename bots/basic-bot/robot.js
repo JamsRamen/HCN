@@ -1,382 +1,103 @@
 import { BCAbstractRobot, SPECS } from 'battlecode';
+import Util from './util.js';
+import Point from './point.js';
+import Role from './role.js';
+import Castle from './castle.js';
+import Church from './church.js';
+import Pilgrim from './pilgrim.js';
+import Crusader from './crusader.js';
+import Prophet from './prophet.js';
+import Preacher from './preacher.js';
 
-// put queue into its own file
+const norm = Util.norm;
 
-class QueueNode {
-    constructor(v) {
-        this.left = this.right = undefined;
-        this.val = v;
-    }
-}
+// function isPassableAndUnoccupied(location, map, robotMap) {
+//     return map[location[0]][location[1]] && robotMap[location[0]][location[1]] <= 0;
+// }
 
-class Queue {
-    constructor() {
-        this.sz = 0;
-        this.front = undefined;
-        this.back = undefined;
-    }
-    pushFront(v) {
-        if (this.front === undefined) {
-            this.front = new QueueNode(v);
-            this.back = this.front;
-        }
-        else {
-            let newNode = new QueueNode(v);
-            newNode.right = this.front;
-            this.front.left = newNode;
-            this.front = newNode;
-        }
-        this.sz++;
-    }
-    pushBack(v) {
-        if (this.back === undefined) {
-            this.back = new QueueNode(v);
-            this.front = this.back;
-        }
-        else {
-            let newNode = new QueueNode(v);
-            newNode.left = this.back;
-            this.back.right = newNode;
-            this.back = newNode;
-        }
-        this.sz++;
-    }
-    popFront() {
-        if (this.front === undefined)
-            return undefined;
-        let res = this.front.val;
-        this.front = this.front.right;
-        if (this.front === undefined)
-            this.back = undefined;
-        else
-            this.front.left = undefined;
-        this.sz--;
-        return res;
-    }
-    popBack() {
-        if (this.back === undefined)
-            return undefined;
-        let res = this.back.val;
-        this.back = this.back.left;
-        if (this.back === undefined)
-            this.front = undefined;
-        else
-            this.back.right = undefined;
-        this.sz--;
-        return res;
-    }
-    peekFront() {
-        if (this.front === undefined)
-            return undefined;
-        return this.front.val;
-    }
-    peekBack() {
-        if (this.back === undefined)
-            return undefined;
-        return this.back.val;
-    }
-    size() {
-        return this.sz;
-    }
-}
+// function isMine(location, fuelMap, karboniteMap) {
+//     return fuelMap[location[0]][location[1]] || karboniteMap[location[0]][location[1]];
+// }
 
-let consoleLog = undefined;
+// function isVerticallySymmetric(map, fuelMap, karboniteMap) {
+//     for (let i = 0; i < map.length; i++) {
+//         for (let j = 0; j * 2 < map.length; j++) {
+//             if (map[i][j] != map[i][map.length - 1 - j])
+//                 return false;
+//         }
+//     }
+//     return true;
+// }
 
-// put in utility file
+// function isHorizontallySymmetric(map, fuelMap, karboniteMap) {
+//     for (let j = 0; j < map.length; j++) {
+//         for (let i = 0; i * 2 < map.length; i++) {
+//             if (map[i][j] != map[map.length - 1 - i][j])
+//                 return false;
+//         }
+//     }
+//     return true;
+// }
 
-// function should be called norm
-function dist(pos1, pos2) {
-    return (pos1[0] - pos2[0]) * (pos1[0] - pos2[0]) + (pos1[1] - pos2[1]) * (pos1[1] - pos2[1]);
-}
+// function findNearestMine(fuelMap, karboniteMap, location, movementSpeed) {
+//     const deltas = getDeltas(movementSpeed);
+//     const queue = new Queue();
+//     const visited = {};
+//     queue.pushBack(location);
+//     while (queue.size() != 0) {
+//         const currentLocation = queue.popFront();
+//         if (isMine(location, fuelMap, karboniteMap))
+//             return currentLocation;
+//         for (let i = 0; i < deltas.length; i++) {
+//             const nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
+//             if (nextLocation[0] >= 0 && nextLocation[0] < fuelMap.length && nextLocation[1] >= 0 && nextLocation[1] < fuelMap.length && visited[nextLocation] === undefined) {
+//                 queue.pushBack(nextLocation);
+//                 visited[nextLocation] = true;
+//             }
+//         }
+//     }
+//     return undefined;
+// }
 
-// function should be called manhattan or taxidist
 
-function mdist(x1, y1, x2, y2) {
-    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-}
 
-function reverse(arr) {
-    let start = 0;
-    let end = arr.length - 1;
-    while (start < end) {
-        let temp = arr[start];
-        arr[start] = arr[end];
-        arr[end] = temp;
-        start++;
-        end--;
-    }
-}
-
-function isVerticallySymmetric(map, fuelMap, karboniteMap) {
-    for (let i = 0; i < map.length; i++) {
-        for (let j = 0; j * 2 < map.length; j++) {
-            if (map[i][j] != map[i][map.length - 1 - j])
-                return false;
-        }
-    }
-    return true;
-}
-
-function isHorizontallySymmetric(map, fuelMap, karboniteMap) {
-    for (let j = 0; j < map.length; j++) {
-        for (let i = 0; i * 2 < map.length; i++) {
-            if (map[i][j] != map[map.length - 1 - i][j])
-                return false;
-        }
-    }
-    return true;
-}
-
-function findPossibleOpponentCastles(map, fuelMap, karboniteMap, knownCastleLocations) {
-    let locations = [];
-    if (isHorizontallySymmetric(map, fuelMap, karboniteMap)) {
-        for (let i = 0; i < knownCastleLocations.length; i++) {
-            locations.push([map.length - 1 - knownCastleLocations[i][0], knownCastleLocations[i][1]]);
-        }
-    }
-    if (isVerticallySymmetric(map, fuelMap, karboniteMap)) {
-        for (let i = 0; i < knownCastleLocations.length; i++) {
-            locations.push([knownCastleLocations[i][0], map.length - 1 - knownCastleLocations[i][1]]);
-        }
-    }
-    return locations;
-}
-
-function findNearestMine(fuelMap, karboniteMap, location) {
-    const deltas = getDeltas(1);
-    const queue = new Queue();
-    const visited = {};
-    queue.pushBack(location);
-    while (queue.size() != 0) {
-        const currentLocation = queue.popFront();
-        if (fuelMap[currentLocation[0]][currentLocation[1]] || karboniteMap[currentLocation[0]][currentLocation[1]])
-            return currentLocation;
-        for (let i = 0; i < deltas.length; i++) {
-            const nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
-            if (nextLocation[0] >= 0 && nextLocation[0] < fuelMap.length && nextLocation[1] >= 0 && nextLocation[1] < fuelMap.length && visited[nextLocation] === undefined) {
-                queue.pushBack(nextLocation);
-                visited[nextLocation] = true;
-            }
-        }
-    }
-    return undefined;
-}
-
-// split into two functions
-function isPassableAndUnoccupied(location, map, robotMap) {
-    return map[location[0]][location[1]] && robotMap[location[0]][location[1]] <= 0;
-}
-
-// add documentation and comments
-
-function getDeltas(movementSpeed) {
-    let deltas = [];
-    for (let i = 0; i * i <= movementSpeed; i++) {
-        for (let j = 0; j * j <= movementSpeed; j++) {
-            if (i === 0 && j === 0) continue;
-            if (i * i + j * j <= movementSpeed) {
-                deltas.push([i, j]);
-                deltas.push([-i, j]);
-                deltas.push([i, -j]);
-                deltas.push([-i, -j]);
-            }
-        }
-    }
-    return deltas;
-}
-
-// generalize function ...
-function getPathTowardsWithoutRobots(map, source, destination, movementSpeed) {
-    const deltas = getDeltas(movementSpeed);
-    const queue = new Queue();
-    const parent = {};
-    queue.pushBack(source);
-    while (queue.size() != 0) {
-        let currentLocation = queue.popFront();
-        if (currentLocation === destination)
-            break;
-        for (let i = 0; i < deltas.length; i++) {
-            let nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
-            if (nextLocation[0] >= 0 && nextLocation[0] < map.length && nextLocation[1] >= 0 && nextLocation[1] < map.length) {
-                if (nextLocation != source && parent[nextLocation] === undefined && map[nextLocation[0]][nextLocation[1]]) {
-                    parent[nextLocation] = currentLocation;
-                    queue.pushBack(nextLocation);
-                }
-            }
-        }
-    }
-    const path = [];
-    if (parent[destination] === undefined)
-        return undefined;
-    let location = destination;
-    while (location != source) {
-        path.push(location);
-        location = parent[location];
-    }
-    path.push(location);
-    reverse(path);
-    return path;
-}
-// ... with this one
-function getPathTowardsWithRobots(map, robotMap, source, destination, movementSpeed) {
-    const deltas = getDeltas(movementSpeed);
-    const queue = new Queue();
-    const parent = {};
-    queue.pushBack(source);
-    while (queue.size() != 0) {
-        let currentLocation = queue.popFront();
-        if (currentLocation === destination)
-            break;
-        for (let i = 0; i < deltas.length; i++) {
-            let nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
-            if (nextLocation[0] >= 0 && nextLocation[0] < map.length && nextLocation[1] >= 0 && nextLocation[1] < map.length) {
-                if (nextLocation != source && parent[nextLocation] === undefined && map[nextLocation[0]][nextLocation[1]] && robotMap[nextLocation[0]][nextLocation[1]] <= 0) {
-                    parent[nextLocation] = currentLocation;
-                    queue.pushBack(nextLocation);
-                }
-            }
-        }
-    }
-    const path = [];
-    let location = destination;
-    if (parent[destination] === undefined) {
-        if (dist(source, destination) <= 2)
-            return undefined;
-        let tempDestination = undefined;
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                let newLocation = [destination[0] + i, destination[1] + j];
-                if (parent[newLocation] != undefined) {
-                    if (tempDestination === undefined || dist(tempDestination, source) > dist(newLocation, source))
-                        tempDestination = newLocation;
-                }
-            }
-        }
-        location = tempDestination;
-    }
-    while (location != source) {
-        path.push(location);
-        location = parent[location];
-    }
-    path.push(location);
-    reverse(path);
-    return path;
-}
- 
-class Role {
-    constructor() {
-        this.knownUnits = [];
-        this.currentPath = undefined;
-        this.currentPathIndex = 0;
-    }
-    turn(context) {
-        const robots = context.getVisibleRobots();
-        for (let i = 0; i < robots.length; i++) {
-            this.knownUnits.push(Object.assign({}, robots[i]));
-        }
-        return undefined;
-    }
-    moveTowards(context, destination) {
-        if (this.currentPath === undefined) {
-            this.currentPath = getPathTowardsWithoutRobots(context.map, [context.me.y, context.me.x], destination, SPECS.UNITS[context.me.unit].SPEED);
-            this.currentPathIndex = 0;
-        }
-        if (this.currentPath === undefined) {
-            return undefined;
-        }
-        if (this.currentPathIndex === this.currentPath.length - 1) {
-            return undefined;
-        }
-        if (isPassableAndUnoccupied(this.currentPath[this.currentPathIndex + 1], context.map, context.getVisibleRobotMap())) {
-            this.currentPathIndex++;
-            return context.move(this.currentPath[this.currentPathIndex][1] - this.currentPath[this.currentPathIndex - 1][1], this.currentPath[this.currentPathIndex][0] - this.currentPath[this.currentPathIndex - 1][0]);
-        }
-        else {
-            let nextOpenLocationIndex = this.currentPath.length - 1;
-            let nextOpenLocation = this.currentPath[nextOpenLocationIndex];
-            for (let i = this.currentPathIndex + 1; i < this.currentPath.length; i++) {
-                if (isPassableAndUnoccupied(this.currentPath[i], context.map, context.getVisibleRobotMap())) {
-                    nextOpenLocation = this.currentPath[i];
-                    nextOpenLocationIndex = i;
-                    break;
-                }
-            }
-            if (nextOpenLocation === undefined)
-                return undefined;
-            const miniPath = getPathTowardsWithRobots(context.map, context.getVisibleRobotMap(), [context.me.y, context.me.x], nextOpenLocation, SPECS.UNITS[context.me.unit].SPEED);
-            if (miniPath === undefined)
-                return undefined;
-            if (miniPath.length === 2 && miniPath[1] === nextOpenLocation)
-                this.currentPathIndex = nextOpenLocationIndex;
-            return context.move(miniPath[1][1] - context.me.x, miniPath[1][0] - context.me.y);
-        }
-    }
-}
- 
-class Castle extends Role {
-    turn(context) {
-        super.turn(context);
-        // return context.buildUnit(SPECS.CRUSADER, 0, 1);
-        if (Math.random() < .5)
-            return context.buildUnit(0, SPECS.PILGRIM, 0, 1);
-        return context.buildUnit(0, SPECS.CRUSADER, 0, 1);
-    }
-}
- 
-class Crusader extends Role {
-    turn(context) {
-        super.turn(context);
-        const robots = context.getVisibleRobots();
-        for (let i = 0; i < robots.length; i++) {
-            if (robots[i].team != context.me.team && robots[i].y != null) {
-                let d = dist([robots[i].y, robots[i].x], [context.me.y, context.me.x]);
-                if (d >= (SPECS.UNITS[context.me.unit].ATTACK_RADIUS)[0] && d <= (SPECS.UNITS[context.me.unit].ATTACK_RADIUS)[1]) {
-                    return context.attack(robots[i].x - context.me.x, robots[i].y - context.me.y);
-                }
-            }
-        }
-        const castleLocations = [];
-        for (let i = 0; i < this.knownUnits.length; i++) {
-            if (this.knownUnits[i].unit === SPECS.CASTLE)
-                castleLocations.push([this.knownUnits[i].y, this.knownUnits[i].x]);
-        }
-        const opponentCastles = findPossibleOpponentCastles(context.map, context.fuel_map, context.karbonite_map, castleLocations);
-        const castleToAttack = opponentCastles[Math.floor(Math.random() * opponentCastles.length)];
-        return this.moveTowards(context, castleToAttack);
-    }
-}
-
-class Church extends Role {
-    turn(context) {
-        super.turn(context);
-    }
-}
-
-class Pilgrim extends Role {
-    turn(context) {
-        super.turn(context);
-        const mineLocation = findNearestMine(context.fuel_map, context.karbonite_map, [context.me.y, context.me.x]);
-        return this.moveTowards(context, mineLocation);
-    }
-}
-
-class Prophet extends Role {
-    turn(context) {
-        super.turn(context);
-    }
-}
-
-class Preacher extends Role {
-    turn(context) {
-        super.turn(context);
-    }
-}
+// function getPathTowardsWithoutRobots(map, source, destination, movementSpeed) {
+//     const deltas = getDeltas(movementSpeed);
+//     const queue = new Queue();
+//     const parent = {};
+//     queue.pushBack(source);
+//     while (queue.size() != 0) {
+//         let currentLocation = queue.popFront();
+//         if (currentLocation === destination)
+//             break;
+//         for (let i = 0; i < deltas.length; i++) {
+//             let nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
+//             if (nextLocation[0] >= 0 && nextLocation[0] < map.length && nextLocation[1] >= 0 && nextLocation[1] < map.length) {
+//                 if (nextLocation != source && parent[nextLocation] === undefined && map[nextLocation[0]][nextLocation[1]]) {
+//                     parent[nextLocation] = currentLocation;
+//                     queue.pushBack(nextLocation);
+//                 }
+//             }
+//         }
+//     }
+//     const path = [];
+//     if (parent[destination] === undefined)
+//         return undefined;
+//     let location = destination;
+//     while (location != source) {
+//         path.push(location);
+//         location = parent[location];
+//     }
+//     path.push(location);
+//     reverse(path);
+//     return path;
+// }
 
 class MyRobot extends BCAbstractRobot {
     constructor() {
         super();
         this.unit = null;
-        consoleLog = val => this.log(val);
+        global.consoleLog = v => this.log(v);
     }
     turn() {
         // make init function
@@ -384,7 +105,7 @@ class MyRobot extends BCAbstractRobot {
             let signal = 0;
             const visibleRobots = this.getVisibleRobotMap();
             for (let i = 0; i < visibleRobots.length; i++) {
-                if (visibleRobots[i].unit === SPECS.CASTLE && dist([visibleRobots[i].x, visibleRobots[i].y], [this.me.x, this.me.y]) < 4) {
+                if (visibleRobots[i].unit === SPECS.CASTLE && norm([visibleRobots[i].x, visibleRobots[i].y], [this.me.x, this.me.y]) < 4) {
                     signal = visibleRobots[i].signal;
                 }
             }
@@ -392,46 +113,25 @@ class MyRobot extends BCAbstractRobot {
             // is there a cleaner way to do this?
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
-                    this.unit = new Crusader();
+                    this.unit = new Crusader(this);
                     break;
                 case SPECS.PILGRIM:
-                    this.unit = new Pilgrim();
+                    this.unit = new Pilgrim(this);
                     break;
                 case SPECS.PROPHET:
-                    this.unit = new Prophet();
+                    this.unit = new Prophet(this);
                     break;
                 case SPECS.PREACHER:
-                    this.unit = new Preacher();
+                    this.unit = new Preacher(this);
                     break;
                 case SPECS.CHURCH:
-                    this.unit = new Church();
+                    this.unit = new Church(this);
                     break;
                 case SPECS.CASTLE:
-                    this.unit = new Castle();
+                    this.unit = new Castle(this);
                     break;
             }
         }
-        return this.unit.turn(this);
-    }
-    buildUnit(signal, type, dx, dy) {
-        // what a horrendous if statement
-        // shouldn't these checks be done before buildUnit is called?
-        if ((this.me.unit === SPECS.CASTLE || this.me.unit === SPECS.CHURCH)
-            && this.me.x + dx >= 0 && this.me.x + dx < this.map.length // make isInBounds function 
-            && this.me.y + dy >= 0 && this.me.y + dy < this.map.length
-            && Math.abs(dx) <= 1 && Math.abs(dy) <= 1 // use norm(dx, dy) <= 2
-            && this.map[this.me.y + dy][this.me.x + dx]
-            && this.getVisibleRobotMap()[this.me.y + dy][this.me.x + dx] === 0 // make isOccupied function
-            && this.karbonite >= SPECS.UNITS[type].CONSTRUCTION_KARBONITE // make isBuildable function
-            && this.fuel >= SPECS.UNITS[type].CONSTRUCTION_FUEL) {
-            if (signal !== 0)
-                // use pow instead for readability
-                this.signal(signal, dx * dx + dy * dy);
-        }
-        // even if the checks fail, the robot still commits to building
-        return super.buildUnit(type, dx, dy);
+        return this.unit.turn();
     }
 }
-
-// you can rename MyRobot
-var robot = new MyRobot();
