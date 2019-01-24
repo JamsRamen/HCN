@@ -35,7 +35,7 @@ let currentDestination = undefined;
 let currentResultMap = undefined;
 
 function findPassablePathsFrom(location, movementSpeed, cartography) {
-    consoleLog("FINDING PATHS");
+    consoleLog("FINDING PATHS")
     if (currentDestination === location) {
         consoleLog("USING CACHE");
         return currentResultMap;
