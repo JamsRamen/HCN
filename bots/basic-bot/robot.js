@@ -93,8 +93,6 @@ const norm = Util.norm;
 //     return path;
 // }
 
-
-
 class MyRobot extends BCAbstractRobot {
     constructor() {
         super();
@@ -102,6 +100,7 @@ class MyRobot extends BCAbstractRobot {
         global.consoleLog = v => this.log(v);
     }
     turn() {
+        // make init function
         if (this.me.turn === 1) {
             let signal = 0;
             const visibleRobots = this.getVisibleRobotMap();
@@ -110,6 +109,8 @@ class MyRobot extends BCAbstractRobot {
                     signal = visibleRobots[i].signal;
                 }
             }
+            
+            // is there a cleaner way to do this?
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
                     this.unit = new Crusader(this);
@@ -134,5 +135,3 @@ class MyRobot extends BCAbstractRobot {
         return this.unit.turn();
     }
 }
-
-// var robot = new MyRobot();
