@@ -31,13 +31,11 @@ function findPossibleOpponentCastles(knownCastleLocations, cartography) {
     return locations;
 }
 
-let currentDestination = undefined;
-let currentResultMap = undefined;
+var currentDestination = undefined;
+var currentResultMap = undefined;
 
 function findPassablePathsFrom(location, movementSpeed, cartography) {
-    consoleLog("FINDING PATHS")
-    if (currentDestination === location) {
-        consoleLog("USING CACHE");
+    if (location.equals(currentDestination)) {
         return currentResultMap;
     }
     const deltas = getCircle(movementSpeed);

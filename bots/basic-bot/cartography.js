@@ -87,7 +87,7 @@ class Cartography {
      */
     isOpen(pos) {
         this.boundsCheck(pos);
-        return !this.isOccupied(pos) && this.map(pos);
+        return !this.isOccupied(pos) && this.isPassable(pos);
     }
     
     /**

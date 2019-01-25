@@ -46,6 +46,16 @@ class Point {
     toString() {
         return "(" + this.x + ", " + this.y + ")";
     }
+
+    /**
+     * @param {Point} other point to compare to
+     * @return {boolean} return true if the points have the same coordinates
+     */
+    equals(other) {
+        if (!other)
+            return false;
+        return other.x === this.x && other.y === this.y;
+    }
 }
 
 export default Point;

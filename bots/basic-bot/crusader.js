@@ -24,10 +24,7 @@ class Crusader extends Role {
                 castleLocations.push(unit.pos);
         });
         const opponentCastles = findPossibleOpponentCastles(castleLocations, this.cartography);
-        consoleLog(opponentCastles);
         const castleToAttack = opponentCastles[Math.floor(Math.random() * opponentCastles.length)];
-        consoleLog("CRUSADER TURN: MOVING TOWARDS CASTLE " + castleToAttack);
-        consoleLog(this.me.time);
         return this.moveTowards(castleToAttack);
     }
 }

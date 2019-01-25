@@ -5,6 +5,7 @@ import Point from './point.js';
 import Nav from './nav.js';
 
 const getCircle = Util.getCircle;
+const norm = Util.norm;
 const findPassablePathsFrom = Nav.findPassablePathsFrom;
 
 class Role {
@@ -16,7 +17,7 @@ class Role {
 
         // reference to MyRobot class (not meant to be accessed)
         this.context = context;
-        this.cartography = new Cartography(this.context.map, this.context.karbonite_map, this.context.fuel_map, this.context.getVisibleRobotMap);
+        this.cartography = new Cartography(this.context.map, this.context.karbonite_map, this.context.fuel_map, _ => this.context.getVisibleRobotMap());
 
         // constants from specs
         this.CONSTRUCTION_KARBONITE = SPECS.UNITS[this.context.me.unit].CONSTRUCTION_KARBONITE;
@@ -123,11 +124,31 @@ class Role {
         return this.decide();
     }
     moveTowards(destination) {
+        const startTime = new Date().getTime();
         const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
-        const nextPosition = resultMap[this.me.pos];
-        // if (this.cartography.isOpen(nextPosition))
-            // return this.move(new Point(nextPosition).add(this.me.pos));
-        return this.move(new Point(0, 1).add(this.me.pos));
+        const nextPosition = resultMap[this.me.pos].next;
+        if (this.cartography.isOpen(nextPosition))
+            return this.move(nextPosition);
+        const deltas = getCircle(this.SPEED);
+        let bestPosition = undefined;
+        for (let i = 0; i < deltas.length; i++) {
+            const position = this.me.pos.add(deltas[i]);
+            if (this.cartography.isInBounds(position) && this.cartography.isOpen(position)) {
+                if (norm(position, destination) >= norm(this.me.pos, destination))
+                    continue;
+                if (bestPosition === undefined) {
+                    bestPosition = position;
+                } else if (resultMap[position].dist < resultMap[bestPosition].dist) {
+                    bestPosition = position;
+                } else if (resultMap[position].dist == resultMap[bestPosition].dist && norm(position, destination) < norm(bestPosition, destination)) {
+                    bestPosition = position;
+                }
+            }
+        }
+        const timeSpent = (new Date().getTime() - startTime);
+        if (bestPosition === undefined)
+            return undefined;
+        return this.move(bestPosition);
     }
 }
 
