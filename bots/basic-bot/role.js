@@ -124,9 +124,12 @@ class Role {
         return this.decide();
     }
     moveTowards(destination) {
+        consoleLog("DESTINATION: " + destination);
         const startTime = new Date().getTime();
         const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
         const nextPosition = resultMap[this.me.pos].next;
+        if (nextPosition === undefined)
+            return undefined;
         if (this.cartography.isOpen(nextPosition))
             return this.move(nextPosition);
         const deltas = getCircle(this.SPEED);
