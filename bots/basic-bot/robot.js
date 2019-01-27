@@ -11,88 +11,6 @@ import Preacher from './preacher.js';
 
 const norm = Util.norm;
 
-// function isPassableAndUnoccupied(location, map, robotMap) {
-//     return map[location[0]][location[1]] && robotMap[location[0]][location[1]] <= 0;
-// }
-
-// function isMine(location, fuelMap, karboniteMap) {
-//     return fuelMap[location[0]][location[1]] || karboniteMap[location[0]][location[1]];
-// }
-
-// function isVerticallySymmetric(map, fuelMap, karboniteMap) {
-//     for (let i = 0; i < map.length; i++) {
-//         for (let j = 0; j * 2 < map.length; j++) {
-//             if (map[i][j] != map[i][map.length - 1 - j])
-//                 return false;
-//         }
-//     }
-//     return true;
-// }
-
-// function isHorizontallySymmetric(map, fuelMap, karboniteMap) {
-//     for (let j = 0; j < map.length; j++) {
-//         for (let i = 0; i * 2 < map.length; i++) {
-//             if (map[i][j] != map[map.length - 1 - i][j])
-//                 return false;
-//         }
-//     }
-//     return true;
-// }
-
-// function findNearestMine(fuelMap, karboniteMap, location, movementSpeed) {
-//     const deltas = getDeltas(movementSpeed);
-//     const queue = new Queue();
-//     const visited = {};
-//     queue.pushBack(location);
-//     while (queue.size() != 0) {
-//         const currentLocation = queue.popFront();
-//         if (isMine(location, fuelMap, karboniteMap))
-//             return currentLocation;
-//         for (let i = 0; i < deltas.length; i++) {
-//             const nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
-//             if (nextLocation[0] >= 0 && nextLocation[0] < fuelMap.length && nextLocation[1] >= 0 && nextLocation[1] < fuelMap.length && visited[nextLocation] === undefined) {
-//                 queue.pushBack(nextLocation);
-//                 visited[nextLocation] = true;
-//             }
-//         }
-//     }
-//     return undefined;
-// }
-
-
-
-// function getPathTowardsWithoutRobots(map, source, destination, movementSpeed) {
-//     const deltas = getDeltas(movementSpeed);
-//     const queue = new Queue();
-//     const parent = {};
-//     queue.pushBack(source);
-//     while (queue.size() != 0) {
-//         let currentLocation = queue.popFront();
-//         if (currentLocation === destination)
-//             break;
-//         for (let i = 0; i < deltas.length; i++) {
-//             let nextLocation = [currentLocation[0] + deltas[i][0], currentLocation[1] + deltas[i][1]];
-//             if (nextLocation[0] >= 0 && nextLocation[0] < map.length && nextLocation[1] >= 0 && nextLocation[1] < map.length) {
-//                 if (nextLocation != source && parent[nextLocation] === undefined && map[nextLocation[0]][nextLocation[1]]) {
-//                     parent[nextLocation] = currentLocation;
-//                     queue.pushBack(nextLocation);
-//                 }
-//             }
-//         }
-//     }
-//     const path = [];
-//     if (parent[destination] === undefined)
-//         return undefined;
-//     let location = destination;
-//     while (location != source) {
-//         path.push(location);
-//         location = parent[location];
-//     }
-//     path.push(location);
-//     reverse(path);
-//     return path;
-// }
-
 class MyRobot extends BCAbstractRobot {
     constructor() {
         super();
@@ -100,7 +18,6 @@ class MyRobot extends BCAbstractRobot {
         global.consoleLog = v => this.log(v);
     }
     turn() {
-        // make init function
         if (this.me.turn === 1) {
             let signal = 0;
             const visibleRobots = this.getVisibleRobotMap();
@@ -110,25 +27,24 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
             
-            // is there a cleaner way to do this?
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
-                    this.unit = new Crusader(this);
+                    this.unit = new Crusader(this, signal);
                     break;
                 case SPECS.PILGRIM:
-                    this.unit = new Pilgrim(this);
+                    this.unit = new Pilgrim(this, signal);
                     break;
                 case SPECS.PROPHET:
-                    this.unit = new Prophet(this);
+                    this.unit = new Prophet(this, signal);
                     break;
                 case SPECS.PREACHER:
-                    this.unit = new Preacher(this);
+                    this.unit = new Preacher(this, signal);
                     break;
                 case SPECS.CHURCH:
-                    this.unit = new Church(this);
+                    this.unit = new Church(this, signal);
                     break;
                 case SPECS.CASTLE:
-                    this.unit = new Castle(this);
+                    this.unit = new Castle(this, signal);
                     break;
             }
         }

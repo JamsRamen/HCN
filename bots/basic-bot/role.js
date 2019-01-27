@@ -3,17 +3,20 @@ import Util from './util.js';
 import Cartography from './cartography.js';
 import Point from './point.js';
 import Nav from './nav.js';
+import Config from './config.js';
 
 const getCircle = Util.getCircle;
 const norm = Util.norm;
 const findPassablePathsFrom = Nav.findPassablePathsFrom;
 
 class Role {
-    constructor(context) {
+    constructor(context, spawnSignal) {
         // custom properties of all roles
         this.knownUnits = {};
         this.currentPath = undefined;
         this.currentPathIndex = 0;
+        this.spawnSignal = spawnSignal;
+        this.unitType = spawnSignal % 4;
 
         // reference to MyRobot class (not meant to be accessed)
         this.context = context;
@@ -64,7 +67,7 @@ class Role {
         let result = undefined;
         const deltas = getCircle(2);
         deltas.forEach(delta => {
-            if (this.cartography.isOpen(this.me.pos.add(delta))) {
+            if (this.cartography.isInBounds(this.me.pos.add(delta)) && this.cartography.isOpen(this.me.pos.add(delta))) {
                 result = this.buildUnit(type, this.me.pos.add(delta));
             }
         });
@@ -76,23 +79,6 @@ class Role {
             this.signal(signal, 2);
         }
         return result;
-        // for (let i = 0; i < deltas.length; i++) {
-        //     if (isPassableAndUnoccupied([context.me.y + deltas[i][0], context.me.x + deltas[i][1]], context.map, context.getVisibleRobotMap()))
-        //         return context.buildUnit(signal, type, deltas[i][1], deltas[i][0]);
-        // }
-        // return undefined;
-        // if ((this.me.unit === SPECS.CASTLE || this.me.unit === SPECS.CHURCH)
-        //     && this.me.x + dx >= 0 && this.me.x + dx < this.map.length
-        //     && this.me.y + dy >= 0 && this.me.y + dy < this.map.length
-        //     && Math.abs(dx) <= 1 && Math.abs(dy) <= 1
-        //     && this.map[this.me.y + dy][this.me.x + dx]
-        //     && this.getVisibleRobotMap()[this.me.y + dy][this.me.x + dx] === 0
-        //     && this.karbonite >= SPECS.UNITS[type].CONSTRUCTION_KARBONITE
-        //     && this.fuel >= SPECS.UNITS[type].CONSTRUCTION_FUEL) {
-        //     if (signal !== 0)
-        //         this.signal(signal, dx * dx + dy * dy);
-        // }
-        // return super.buildUnit(type, dx, dy);
     }
     proposeTrade(karbonite, fuel) {
         return this.context.proposeTrade(karbonite, fuel);
@@ -136,10 +122,11 @@ class Role {
             this.knownUnits[robot.id] = robot;
         });
 
+        this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_UPDATE, this.unitType);
+
         return this.decide();
     }
     moveTowards(destination) {
-        const startTime = new Date().getTime();
         const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
         const nextPosition = resultMap[this.me.pos].next;
         if (nextPosition === undefined)
@@ -162,10 +149,12 @@ class Role {
                 }
             }
         }
-        const timeSpent = (new Date().getTime() - startTime);
         if (bestPosition === undefined)
             return undefined;
         return this.move(bestPosition);
+    }
+    pingCastle(type, value) {
+        return this.castleTalk(value * (1 << (Config.CASTLE_TALK.TYPE_BITS)) + type);
     }
 }
 
