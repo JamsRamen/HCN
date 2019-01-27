@@ -5,9 +5,12 @@ import Role from './role.js';
 import Castle from './castle.js';
 import Church from './church.js';
 import Pilgrim from './pilgrim.js';
-import Crusader from './crusader.js';
-import Prophet from './prophet.js';
-import Preacher from './preacher.js';
+import DefenseCrusader from './defense-crusader.js';
+import AttackCrusader from './attack-crusader.js';
+import DefenseProphet from './defense-prophet.js';
+import AttackProphet from './attack-prophet.js';
+import DefensePreacher from './defense-preacher.js';
+import AttackPreacher from './attack-preacher.js';
 
 const norm = Util.norm;
 
@@ -20,31 +23,42 @@ class MyRobot extends BCAbstractRobot {
     turn() {
         if (this.me.turn === 1) {
             let signal = 0;
-            const visibleRobots = this.getVisibleRobotMap();
+            const visibleRobots = this.getVisibleRobots();
             visibleRobots.forEach(robot => {
-                if (robot.unit === SPECS.CASTLE && norm(new Point(robot.x, robot.y), new Point(this.me.x, this.me.y)) < 4) {
+                if ((robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH) && norm(new Point(robot.x, robot.y), new Point(this.me.x, this.me.y)) < 4) {
                     signal = robot.signal;
                 }
             });
-            
+            const subType = signal % 4;
+            const remainingSignal = signal >> 2;
+
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
-                    this.unit = new Crusader(this, signal);
+                    if (subType === 0)
+                        this.unit = new AttackCrusader(this, remainingSignal, subType);
+                    else if (subType === 1)
+                        this.unit = new DefenseCrusader(this, remainingSignal, subType);
                     break;
                 case SPECS.PILGRIM:
-                    this.unit = new Pilgrim(this, signal);
+                    this.unit = new Pilgrim(this, remainingSignal, subType);
                     break;
                 case SPECS.PROPHET:
-                    this.unit = new Prophet(this, signal);
+                    if (subType === 0)
+                        this.unit = new AttackProphet(this, remainingSignal, subType);
+                    else if (subType === 1)
+                        this.unit = new DefenseProphet(this, remainingSignal, subType);
                     break;
                 case SPECS.PREACHER:
-                    this.unit = new Preacher(this, signal);
+                    if (subType === 0)
+                        this.unit = new AttackPreacher(this, remainingSignal, subType);
+                    else if (subType === 1)
+                        this.unit = new DefensePreacher(this, remainingSignal, subType);
                     break;
                 case SPECS.CHURCH:
-                    this.unit = new Church(this, signal);
+                    this.unit = new Church(this, remainingSignal, subType);
                     break;
                 case SPECS.CASTLE:
-                    this.unit = new Castle(this, signal);
+                    this.unit = new Castle(this, remainingSignal, subType);
                     break;
             }
         }
