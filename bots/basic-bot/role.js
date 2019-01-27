@@ -46,8 +46,9 @@ class Role {
     giveAuto() {
         var result = undefined;
         getCircle(2).foreach(delta => {
-            // if (pos.add(delta) is a castle)
-            //     result = this.context.give(delta.x, delta.y, karbonite, fuel);
+            const dpos = this.me.pos.add(delta);
+            //if (dpos is a castle or church)
+                result = this.context.give(delta.x, delta.y, this.me.karbonite, this.me.fuel);
         });
         
         return result;
