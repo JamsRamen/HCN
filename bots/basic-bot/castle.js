@@ -18,8 +18,8 @@ class Castle extends Role {
         if (attack != undefined)
             return attack;
         if (Math.random() < .5)
-            return this.buildUnitAuto(0, SPECS.PILGRIM);
-        return this.buildUnitAuto(0, SPECS.CRUSADER);
+            return this.buildUnitAuto(-1, SPECS.PILGRIM);
+        return this.buildUnitAuto(-1, SPECS.CRUSADER);
     }
     updateUnitInformation() {
 

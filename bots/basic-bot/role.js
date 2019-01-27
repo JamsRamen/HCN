@@ -84,24 +84,35 @@ class Role {
         return result;
     }
     
+    canBuild(type) {
+        return this.karbonite >= SPECS.UNITS[type].CONSTRUCTION_KARBONITE &&
+               this.fuel >= SPECS.UNITS[type].CONSTRUCTION_FUEL;
+    }
     buildUnit(type, pos) {
         return this.context.buildUnit(type, pos.x - this.me.pos.x, pos.y - this.me.pos.y);
     }
     buildUnitAuto(signal, type) {
+        if (!this.canBuild(type)) {
+            return undefined;
+        }
+        
         let result = undefined;
         const deltas = getCircle(2);
         deltas.forEach(delta => {
-            if (this.cartography.isInBounds(this.me.pos.add(delta)) && this.cartography.isOpen(this.me.pos.add(delta))) {
-                result = this.buildUnit(type, this.me.pos.add(delta));
+            const buildPos = this.me.pos.add(delta);
+            
+            const good = this.cartography.isInBounds(buildPos) && // do not build out of bounds
+                         this.cartography.isOpen(buildPos) &&  // do not build on occupied squares
+                         !(type === SPECS.CHURCH && this.cartography.isMine(buildPos)); // do not build churches on mines
+            if (good) {
+                result = this.buildUnit(type, buildPos);
             }
         });
         if (result === undefined) return undefined;
-        if ((this.me.unit === SPECS.CASTLE || this.me.unit === SPECS.CHURCH)
-            && this.karbonite >= SPECS.UNITS[type].CONSTRUCTION_KARBONITE
-            && this.fuel >= SPECS.UNITS[type].CONSTRUCTION_FUEL
-            && signal != 0) {
+        if (signal != -1) {
             this.signal(signal, 2);
         }
+        
         return result;
     }
     proposeTrade(karbonite, fuel) {
