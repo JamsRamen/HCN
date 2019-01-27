@@ -14,7 +14,7 @@ class Castle extends Role {
     }
     decide() {
         this.updateUnitInformation();
-        const attack = this.attackNearby();
+        const attack = this.attackAuto();
         if (attack != undefined)
             return attack;
         if (Math.random() < .5)
@@ -23,17 +23,6 @@ class Castle extends Role {
     }
     updateUnitInformation() {
 
-    }
-    attackNearby() {
-        let result = undefined;
-        const robots = this.getVisibleRobots();
-        robots.forEach(robot => {
-            if (this.isVisible(robot) && robot.pos && norm(robot.pos, this.me.pos) >= (this.ATTACK_RADIUS)[0] && norm(robot.pos, this.me.pos) <= (this.ATTACK_RADIUS)[1]) {
-                result = this.attack(robot.pos);
-                return;
-            }
-        })
-        return result;
     }
 }
 

@@ -20,7 +20,10 @@ class Role {
 
         // reference to MyRobot class (not meant to be accessed)
         this.context = context;
-        this.cartography = new Cartography(this.context.map, this.context.karbonite_map, this.context.fuel_map, _ => this.context.getVisibleRobotMap());
+        this.cartography = new Cartography(this.context.map,
+                                           this.context.karbonite_map,
+                                           this.context.fuel_map,
+                                           _ => this.context.getVisibleRobotMap());
 
         // constants from specs
         this.CONSTRUCTION_KARBONITE = SPECS.UNITS[this.context.me.unit].CONSTRUCTION_KARBONITE;
@@ -43,6 +46,7 @@ class Role {
     mine() {
         return this.context.mine();
     }
+    
     give(pos, karbonite, fuel) {
         return this.context.give(pos.x - this.me.pos.x, pos.y - this.me.pos.y, karbonite, fuel);
     }
@@ -57,9 +61,29 @@ class Role {
         });
         return result;
     }
+    
     attack(pos) {
         return this.context.attack(pos.x - this.me.pos.x, pos.y - this.me.pos.y);
     }
+    attackAuto() {
+        let result = undefined;
+        const robots = this.getVisibleRobots();
+        
+        robots.forEach(robot => {
+            if (robot.team != this.me.team && this.isVisible(robot)) {
+                const dist = norm(robot.pos, this.me.pos);
+                if (dist >= (this.ATTACK_RADIUS)[0] && dist <= (this.ATTACK_RADIUS)[1]) {
+                    if (result === undefined) {
+                        result = this.attack(robot);
+                    }
+                    // add attacking priority here?
+                }
+            }
+        });
+        
+        return result;
+    }
+    
     buildUnit(type, pos) {
         return this.context.buildUnit(type, pos.x - this.me.pos.x, pos.y - this.me.pos.y);
     }
@@ -156,6 +180,8 @@ class Role {
     pingCastle(type, value) {
         return this.castleTalk(value * (1 << (Config.CASTLE_TALK.TYPE_BITS)) + type);
     }
+    
+    
 }
 
 export default Role;

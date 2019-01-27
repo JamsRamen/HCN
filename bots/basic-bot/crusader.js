@@ -9,15 +9,10 @@ const norm = Util.norm;
 
 class Crusader extends Role {
     decide() {
-        const robots = this.getVisibleRobots();
-        for (let i = 0; i < robots.length; i++) {
-            if (robots[i].team != this.me.team && this.isVisible(robots[i])) {
-                const dist = norm(robots[i].pos, this.me.pos);
-                if (dist >= (this.ATTACK_RADIUS)[0] && dist <= (this.ATTACK_RADIUS)[1]) {
-                    return this.attack(robots[i]);
-                }
-            }
-        }
+        const attack = this.attackAuto();
+        if (attack != undefined)
+            return attack;
+        
         const castleLocations = [];
         Object.keys(this.knownUnits).forEach(id => {
             const unit = this.knownUnits[id];
