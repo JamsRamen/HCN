@@ -20,7 +20,7 @@ class Pilgrim extends Role {
         this.dest = findNearestMine(this.me.pos, this.SPEED, this.cartography);
     }
     decide() {
-        if (this.isFull()) {
+        if (this.isAtCapacity()) {
             this.dest = this.castleLocations[0];
             const result = this.giveAuto();
             if (result === undefined) {

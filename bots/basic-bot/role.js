@@ -22,6 +22,7 @@ class Role {
         // reference to MyRobot class (not meant to be accessed)
         this.context = context;
         
+        // TODO: add extra properties here
         this.me = this.context.me;
         this.me.pos = new Point(this.me.x, this.me.y);
         this.fuel = this.context.fuel;
@@ -193,6 +194,7 @@ class Role {
     // =================== end override battlecode docs
     turn() {
         // local references to battlecode variables
+        // TODO: add to constructor as well?
         this.me = this.context.me;
         this.me.pos = new Point(this.me.x, this.me.y);
         this.fuel = this.context.fuel;
@@ -245,7 +247,7 @@ class Role {
         this.pingedCastle = true;
         return this.castleTalk(value * (1 << (Config.CASTLE_TALK.TYPE_BITS)) + type);
     }
-    isFull () {
+    isAtCapacity () {
         return this.me.karbonite >= this.KARBONITE_CAPACITY ||
                this.me.fuel >= this.FUEL_CAPACITY;
     }
