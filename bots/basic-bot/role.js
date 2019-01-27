@@ -134,20 +134,25 @@ class Role {
         }
         
         let result = undefined;
+        let dist = 3;
         const deltas = getCircle(2);
+        
         deltas.forEach(delta => {
             const buildPos = this.me.pos.add(delta);
-            
+            const candDist = norm(delta);
             const good = this.cartography.isInBounds(buildPos) && // do not build out of bounds
                          this.cartography.isOpen(buildPos) &&  // do not build on occupied squares
                          !(type === SPECS.CHURCH && this.cartography.isMine(buildPos)); // do not build churches on mines
-            if (good) {
+            
+            if (good && candDist < dist) { // minimize spawn distance
                 result = this.buildUnit(type, buildPos);
+                dist = candDist;
             }
         });
         if (result === undefined) return undefined;
+        this.context.log(dist);
         if (signal != -1) {
-            this.signal(signal, 2);
+            this.signal(signal, dist);
         }
         
         return result;
