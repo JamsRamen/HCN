@@ -21,6 +21,13 @@ class Role {
 
         // reference to MyRobot class (not meant to be accessed)
         this.context = context;
+        
+        this.me = this.context.me;
+        this.me.pos = new Point(this.me.x, this.me.y);
+        this.fuel = this.context.fuel;
+        this.karbonite = this.context.karbonite;
+        this.lastOffer = this.context.last_offer;
+        
         this.cartography = new Cartography(this.context.map,
                                            this.context.karbonite_map,
                                            this.context.fuel_map,
@@ -201,10 +208,9 @@ class Role {
             this.knownUnits[robot.id] = robot;
         });
 
-
-        const result = this.decide();
+        const decision = this.decide();
         this.pingCastle(Config.CASTLE_TALK.MESSAGES.LOCATION, 0); // always ping location (if nothing better)
-        return result;
+        return decision;
     }
     moveTowards(destination) {
         const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
@@ -239,7 +245,10 @@ class Role {
         this.pingedCastle = true;
         return this.castleTalk(value * (1 << (Config.CASTLE_TALK.TYPE_BITS)) + type);
     }
-    
+    isFull () {
+        return this.me.karbonite >= this.KARBONITE_CAPACITY ||
+               this.me.fuel >= this.FUEL_CAPACITY;
+    }
     
 }
 

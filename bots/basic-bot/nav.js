@@ -67,7 +67,7 @@ function findNearestMine(location, movementSpeed, cartography) {
     queue.pushBack(location);
     while (queue.size() != 0) {
         const currentLocation = queue.popFront();
-        if (cartography.isMine(currentLocation))
+        if (cartography.isMine(currentLocation) && cartography.isOpen(currentLocation))
             return currentLocation;
         deltas.forEach(delta => {
             const nextLocation = currentLocation.add(delta);
@@ -79,6 +79,8 @@ function findNearestMine(location, movementSpeed, cartography) {
     }
     return undefined;
 }
+
+
 
 export default {
     findPossibleOpponentCastles,

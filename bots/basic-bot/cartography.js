@@ -96,7 +96,7 @@ class Cartography {
      */
     isMine(pos) {
         this.boundsCheck(pos);
-        return this.isKarbonite(pos) || this.isFuelMine(pos);
+        return this.isKarboniteMine(pos) || this.isFuelMine(pos);
     }
     
     /**

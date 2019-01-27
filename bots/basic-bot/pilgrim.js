@@ -1,7 +1,46 @@
 import Role from './role.js';
+import Nav from './nav.js';
+import { SPECS } from 'battlecode';
+
+const findNearestMine = Nav.findNearestMine;
 
 class Pilgrim extends Role {
+    constructor (context, spawnSignal) {
+        super(context, spawnSignal);
+        
+        // TODO: spawn signal interpretation maybe
+        
+        // TODO: better and more general castle detection
+        this.castleLocations = [];
+        (this.getVisibleRobots()).forEach(robot => {
+            if (robot.unit === SPECS.CASTLE && this.me.team === robot.team)
+                this.castleLocations.push(robot.pos);
+        });
+        
+        this.dest = findNearestMine(this.me.pos, this.SPEED, this.cartography);
+    }
     decide() {
+        if (this.isFull()) {
+            this.dest = this.castleLocations[0];
+            const result = this.giveAuto();
+            if (result === undefined) {
+                return this.moveTowards(this.dest);
+            }
+            return result;
+        }
+        // TODO: was it != or !== ?
+        if (this.dest !== undefined && this.cartography.isMine(this.dest) && this.me.pos.equals(this.dest)) {
+            return this.mine();
+        }
+        if (this.dest === undefined || !this.cartography.isMine(this.dest) || !this.cartography.isOpen(this.dest)) {
+            this.dest = findNearestMine(this.me.pos, this.SPEED, this.cartography);
+        }
+        if (this.dest === undefined) {
+            return undefined;
+        }
+        return this.moveTowards(this.dest);
+        
+        
         // const context = this.context;
         // consoleLog(context.me.karbonite + " " + context.me.fuel);
         // if (context.me.karbonite * 2 > SPECS.UNITS[context.me.unit].KARBONITE_CAPACITY || context.me.fuel * 2 > SPECS.UNITS[context.me.unit].FUEL_CAPACITY) {

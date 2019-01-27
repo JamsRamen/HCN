@@ -15,11 +15,11 @@ class Castle extends Role {
     }
     decide() {
         this.updateUnitInformation();
-        consoleLog(this.unitCounts);
+        //consoleLog(this.unitCounts);
         const attack = this.attackAuto();
         if (attack != undefined)
             return attack;
-        if (Math.random() < .1)
+        if (Math.random() < .5)
             return this.buildUnitAuto(-1, SPECS.PILGRIM);
         return this.buildUnitAuto(-1, SPECS.CRUSADER);
     }
