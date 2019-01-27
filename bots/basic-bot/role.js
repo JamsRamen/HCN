@@ -11,12 +11,13 @@ const norm = Util.norm;
 const findPassablePathsFrom = Nav.findPassablePathsFrom;
 
 class Role {
-    constructor(context, spawnSignal) {
+    constructor(context, spawnSignal, subType) {
         // custom properties of all roles
         this.knownUnits = {};
         this.currentPath = undefined;
         this.currentPathIndex = 0;
         this.spawnSignal = spawnSignal;
+        this.subType = subType;
         this.unitType = spawnSignal % 4;
 
         // reference to MyRobot class (not meant to be accessed)
@@ -127,11 +128,12 @@ class Role {
     buildUnit(type, pos) {
         return this.context.buildUnit(type, pos.x - this.me.pos.x, pos.y - this.me.pos.y);
     }
-    buildUnitAuto(signal, type) {
+    buildUnitAuto(signal, type, subType) {
+        if (this.me.turn === 1) return undefined; // don't build on first turn for signaling purposes
         if (!this.canBuild(type)) {
             return undefined;
         }
-        
+
         let result = undefined;
         let dist = 3;
         const deltas = getCircle(2);
@@ -149,10 +151,11 @@ class Role {
             }
         });
         if (result === undefined) return undefined;
-        if (signal != -1) {
-            this.signal(signal, dist);
+        if (signal * 4 + subType != 0) {
+            this.signal(signal * 4 + subType, dist);
         }
-        this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_UPDATE, (signal == -1 ? 7 : signal % 8) * 8 + type);
+        consoleLog(type + " " + subType + " " + signal);
+        this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_UPDATE, subType * 8 + type);
         
         return result;
     }
@@ -201,6 +204,9 @@ class Role {
             this.knownUnits[robot.id] = robot;
         });
 
+        // send spawn signal if first turn
+        if (this.me.turn === 1)
+            this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_SPAWN, this.subType % 8 * 8 + this.me.unit);
 
         const result = this.decide();
         this.pingCastle(Config.CASTLE_TALK.MESSAGES.LOCATION, 0); // always ping location (if nothing better)
@@ -237,7 +243,7 @@ class Role {
         if (this.pingedCastle)
             return undefined;
         this.pingedCastle = true;
-        return this.castleTalk(value * (1 << (Config.CASTLE_TALK.TYPE_BITS)) + type);
+        this.castleTalk(value * (1 << Config.CASTLE_TALK.TYPE_BITS) + type);
     }
     
     

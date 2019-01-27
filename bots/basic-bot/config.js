@@ -3,17 +3,29 @@ export default {
     CASTLE_TALK: {
         TYPE_BITS: 2,
         MESSAGES: {
-            LOCATION: 0,
-            LOG: 1,
-            UNIT_UPDATE: 2
+            LOCATION: 0, // used to report general location of a unit (not really in use)
+            LOG: 1, // used to log critical events
+            UNIT_UPDATE: 2, // sent by castles / churches when a unit is built
+            UNIT_SPAWN: 3 // sent by units on first turn
         }
     },
-    CASTLE: {
-        SPAWN: {
-            CRUSADER: .5,
-            PILGRIM: .5,
-            PREACHER: 0,
-            PROPHET: 0
+    SPAWN: {
+        CASTLE: {
+            3: {
+                0: .0, // attack crusader
+                1: .4 // defense crusader
+            },
+            2: {
+                0: .2 // pilgrim
+            },
+            5: {
+                0: .05, // attack preacher
+                1: .05 // defense preacher
+            },
+            4: {
+                0: .15, // prophet
+                1: .15 // defense prophet
+            }
         }
     },
     CRUSADER: {},

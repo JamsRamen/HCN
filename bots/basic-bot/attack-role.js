@@ -1,13 +1,10 @@
 import { SPECS } from 'battlecode';
 import Role from './role.js';
-import Point from './point.js';
 import Nav from './nav.js';
-import Util from './util.js';
 
 const findPossibleOpponentCastles = Nav.findPossibleOpponentCastles;
-const norm = Util.norm;
 
-class Crusader extends Role {
+class AttackRole extends Role {
     decide() {
         const attack = this.attackAuto();
         if (attack != undefined)
@@ -25,4 +22,4 @@ class Crusader extends Role {
     }
 }
 
-export default Crusader;
+export default AttackRole;
