@@ -43,12 +43,12 @@ class Castle extends Role {
                     break;
             }
         });
-        // Object.keys(this.unitInformation).forEach(id => {
-        //     if (this.unitInformation[id].lastPinged != this.me.turn) {
-        //         this.unitCounts[this.unitInformation[id].unit]--;
-        //         delete this.unitInformation[id];
-        //     }
-        // })
+        Object.keys(this.unitInformation).forEach(id => {
+            if (this.unitInformation[id].lastPinged != this.me.turn) {
+                this.unitCounts[this.unitInformation[id].unit]--;
+                delete this.unitInformation[id];
+            }
+        })
     }
 }
 

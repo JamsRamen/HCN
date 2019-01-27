@@ -192,6 +192,9 @@ class Role {
         this.karbonite = this.context.karbonite;
         this.lastOffer = this.context.last_offer;
 
+        // update castle talk variable
+        this.pingedCastle = false;
+
         // update known variables
         const robots = this.getVisibleRobots();
         robots.forEach((robot) => {
