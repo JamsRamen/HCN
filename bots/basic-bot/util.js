@@ -81,8 +81,20 @@ function reverse(arr) {
     }
 }
 
+/**
+ * Conditional on whether the given value is in the given range (inclusive)
+ * @param {number} value - the value to be tested
+ * @param {number[]} range - the range given as the array [lower, upper]
+ * @return {boolean} true if value is in range, false otherwise
+ */
+function inRange(value, range) {
+    if (range === 0 || range === null || range === undefined) return false; 
+    return value >= range[0] && value <= range[1];
+}
+
 export default {
     norm, mdist, cdist,
     reverse,
-    getCircle
+    getCircle,
+    inRange
 };

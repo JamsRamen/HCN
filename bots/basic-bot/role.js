@@ -6,6 +6,7 @@ import Nav from './nav.js';
 import Config from './config.js';
 
 const getCircle = Util.getCircle;
+const inRange = Util.inRange;
 const norm = Util.norm;
 const findPassablePathsFrom = Nav.findPassablePathsFrom;
 
@@ -67,19 +68,55 @@ class Role {
     }
     attackAuto() {
         let result = undefined;
+        let target = { canAttack: false, unit: -1, id: -1 };
+        let underAttack = false;
         const robots = this.getVisibleRobots();
         
         robots.forEach(robot => {
             if (robot.team != this.me.team && this.isVisible(robot)) {
                 const dist = norm(robot.pos, this.me.pos);
-                if (dist >= (this.ATTACK_RADIUS)[0] && dist <= (this.ATTACK_RADIUS)[1]) {
+                let cand = { canAttack: inRange(dist, SPECS.UNITS[robot.unit].ATTACK_RADIUS), 
+                             unit: robot.unit, 
+                             id: robot.id };
+                if (cand.canAttack) {
+                    underAttack = true;
+                }
+                
+                if (inRange(dist, this.ATTACK_RADIUS)) {
                     if (result === undefined) {
                         result = this.attack(robot);
+                        target = cand;
                     }
-                    // add attacking priority here?
+                    // attack priorities:
+                    // 1. never attack a benign unit if you are under attack
+                    // 2. attack units which are not benign
+                    // 3. break first ties by unit type (found in config.js)
+                    // 4. break second ties by id
+                    
+                    if (cand.canAttack && !target.canAttack) { // 2.
+                        result = this.attack(robot);
+                        target = cand;
+                    }
+                    else if (cand.canAttack == target.canAttack) {
+                        if (Config.ATTACK.PRIORITY[cand.unit] > Config.ATTACK.PRIORITY[target.unit]) { // 3.
+                            result = this.attack(robot);
+                            target = cand;
+                        } else if (Config.ATTACK.PRIORITY[cand.unit] == Config.ATTACK.PRIORITY[target.unit]) { // 4.
+                            if (cand.id < target.id) {
+                                result = this.attack(robot);
+                                target = cand;
+                            }
+                        }
+                    }
                 }
+                
+                
             }
         });
+        
+        if (underAttack && !target.canAttack) { // 1.
+            return undefined;
+        }
         
         return result;
     }
