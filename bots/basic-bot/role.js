@@ -57,7 +57,6 @@ class Role {
         robots.forEach(robot => {
             if (norm(robot.pos, this.me.pos) <= 2 && (robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH)) {
                 result = this.give(robot.pos, this.me.karbonite, this.me.fuel);
-                return;
             }
         });
         return result;
@@ -150,7 +149,6 @@ class Role {
             }
         });
         if (result === undefined) return undefined;
-        this.context.log(dist);
         if (signal != -1) {
             this.signal(signal, dist);
         }

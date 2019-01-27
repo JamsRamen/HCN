@@ -21,11 +21,11 @@ class MyRobot extends BCAbstractRobot {
         if (this.me.turn === 1) {
             let signal = 0;
             const visibleRobots = this.getVisibleRobotMap();
-            for (let i = 0; i < visibleRobots.length; i++) {
-                if (visibleRobots[i].unit === SPECS.CASTLE && norm([visibleRobots[i].x, visibleRobots[i].y], [this.me.x, this.me.y]) < 4) {
-                    signal = visibleRobots[i].signal;
+            visibleRobots.forEach(robot => {
+                if (robot.unit === SPECS.CASTLE && norm(new Point(robot.x, robot.y), new Point(this.me.x, this.me.y)) < 4) {
+                    signal = robot.signal;
                 }
-            }
+            });
             
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
