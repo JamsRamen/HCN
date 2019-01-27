@@ -154,6 +154,7 @@ class Role {
         if (signal != -1) {
             this.signal(signal, dist);
         }
+        this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_UPDATE, (signal == -1 ? 7 : signal % 8) * 8 + type);
         
         return result;
     }
@@ -199,9 +200,10 @@ class Role {
             this.knownUnits[robot.id] = robot;
         });
 
-        this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_UPDATE, this.unitType);
 
-        return this.decide();
+        const result = this.decide();
+        this.pingCastle(Config.CASTLE_TALK.MESSAGES.LOCATION, 0); // always ping location (if nothing better)
+        return result;
     }
     moveTowards(destination) {
         const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
@@ -231,6 +233,9 @@ class Role {
         return this.move(bestPosition);
     }
     pingCastle(type, value) {
+        if (this.pingedCastle)
+            return undefined;
+        this.pingedCastle = true;
         return this.castleTalk(value * (1 << (Config.CASTLE_TALK.TYPE_BITS)) + type);
     }
     
