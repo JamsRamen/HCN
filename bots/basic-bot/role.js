@@ -44,13 +44,14 @@ class Role {
         return this.context.give(pos.x - this.me.pos.x, pos.y - this.me.pos.y, karbonite, fuel);
     }
     giveAuto() {
-        var result = undefined;
-        getCircle(2).foreach(delta => {
-            const dpos = this.me.pos.add(delta);
-            //if (dpos is a castle or church)
-                result = this.context.give(delta.x, delta.y, this.me.karbonite, this.me.fuel);
+        let result = undefined;
+        const robots = this.getVisibleRobots();
+        robots.forEach(robot => {
+            if (norm(robot.pos, this.me.pos) <= 2 && (robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH)) {
+                result = this.give(robot.pos, this.me.karbonite, this.me.fuel);
+                return;
+            }
         });
-        
         return result;
     }
     attack(pos) {
@@ -59,9 +60,22 @@ class Role {
     buildUnit(type, pos) {
         return this.context.buildUnit(type, pos.x - this.me.pos.x, pos.y - this.me.pos.y);
     }
-    // buildUnitAuto(signal, type) {
-        // return undefined;
-        // const deltas = getCircle(2);
+    buildUnitAuto(signal, type) {
+        let result = undefined;
+        const deltas = getCircle(2);
+        deltas.forEach(delta => {
+            if (this.cartography.isOpen(this.me.pos.add(delta))) {
+                result = this.buildUnit(type, this.me.pos.add(delta));
+            }
+        });
+        if (result === undefined) return undefined;
+        if ((this.me.unit === SPECS.CASTLE || this.me.unit === SPECS.CHURCH)
+            && this.karbonite >= SPECS.UNITS[type].CONSTRUCTION_KARBONITE
+            && this.fuel >= SPECS.UNITS[type].CONSTRUCTION_FUEL
+            && signal != 0) {
+            this.signal(signal, 2);
+        }
+        return result;
         // for (let i = 0; i < deltas.length; i++) {
         //     if (isPassableAndUnoccupied([context.me.y + deltas[i][0], context.me.x + deltas[i][1]], context.map, context.getVisibleRobotMap()))
         //         return context.buildUnit(signal, type, deltas[i][1], deltas[i][0]);
@@ -79,7 +93,7 @@ class Role {
         //         this.signal(signal, dx * dx + dy * dy);
         // }
         // return super.buildUnit(type, dx, dy);
-    // }
+    }
     proposeTrade(karbonite, fuel) {
         return this.context.proposeTrade(karbonite, fuel);
     }
@@ -125,7 +139,6 @@ class Role {
         return this.decide();
     }
     moveTowards(destination) {
-        consoleLog("DESTINATION: " + destination);
         const startTime = new Date().getTime();
         const resultMap = findPassablePathsFrom(destination, this.SPEED, this.cartography);
         const nextPosition = resultMap[this.me.pos].next;

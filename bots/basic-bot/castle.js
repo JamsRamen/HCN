@@ -4,7 +4,7 @@ import Point from './point.js';
 
 class Castle extends Role {
     decide() {
-        return this.buildUnit(SPECS.CRUSADER, this.me.pos.add(new Point(0, 1)));
+        return this.buildUnitAuto(1, SPECS.CRUSADER);
         // return context.buildUnit(SPECS.CRUSADER, 0, 1);
         // if (Math.random() < .5)
             // return this.buildUnit(0, SPECS.PILGRIM);
