@@ -71,7 +71,7 @@ function findNearest(location, movementSpeed, cartography, condition) {
             return currentLocation;
         deltas.forEach(delta => {
             const nextLocation = currentLocation.add(delta);
-            if (cartography.isInBounds(nextLocation) && visited[nextLocation] === undefined) {
+            if (cartography.isInBounds(nextLocation) && cartography.isPassable(nextLocation) && visited[nextLocation] === undefined) {
                 queue.pushBack(nextLocation);
                 visited[nextLocation] = true;
             }
