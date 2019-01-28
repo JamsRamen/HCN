@@ -12,8 +12,8 @@ export default {
     SPAWN: {
         CASTLE: {
             3: {
-                0: .0, // attack crusader
-                1: .4 // defense crusader
+                0: .3, // attack crusader
+                1: .1 // defense crusader
             },
             2: {
                 0: .2 // pilgrim
