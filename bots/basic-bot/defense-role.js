@@ -1,8 +1,10 @@
 import Role from './role.js';
 import Nav from './nav.js';
+import Util from './util.js'
 import { SPECS } from 'battlecode';
 
 const findNearest = Nav.findNearest;
+const norm = Util.norm;
 
 class DefenseRole extends Role {
     constructor (context, spawnSignal) {
@@ -19,7 +21,7 @@ class DefenseRole extends Role {
         const castleLoc = this.castleLocations[0];
         
         this.isDefensePos = (cart, loc) =>
-            cart.isOpen(loc) && (castleLoc.x - loc.x) % 2 === 0 && (castleLoc.y - loc.y) % 2 === 0;
+            cart.isOpen(loc) && loc.x % 2 === 0 && loc.y % 2 === 0 && norm(castleLoc, loc) > 2;
         
         this.dest = findNearest(this.me.pos, this.SPEED, this.cartography, this.isDefensePos);
     }
