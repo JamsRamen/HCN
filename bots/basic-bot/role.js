@@ -162,7 +162,6 @@ class Role {
         if (signal * 4 + subType != 0) {
             this.signal(signal * 4 + subType, dist);
         }
-        consoleLog(type + " " + subType + " " + signal);
         this.pingCastle(Config.CASTLE_TALK.MESSAGES.UNIT_UPDATE, subType * 8 + type);
         
         return result;
@@ -251,7 +250,6 @@ class Role {
     pingCastle(type, value) {
         if (this.pingedCastle)
             return undefined;
-        consoleLog(type + " " + value);
         this.pingedCastle = true;
         this.castleTalk(value * (1 << Config.CASTLE_TALK.TYPE_BITS) + type);
     }

@@ -24,14 +24,13 @@ class MyRobot extends BCAbstractRobot {
         if (this.me.turn === 1) {
             let signal = 0;
             const visibleRobots = this.getVisibleRobots();
-            //visibleRobots.forEach(robot => {
-            //    if ((robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH) && norm(new Point(robot.x, robot.y), new Point(this.me.x, this.me.y)) < 4) {
-            //        signal = robot.signal;
-            //    }
-            //});
+            visibleRobots.forEach(robot => {
+                if (this.isRadioing(robot) && (robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH) && norm(new Point(robot.x, robot.y), new Point(this.me.x, this.me.y)) < 4) {
+                    signal = robot.signal;
+                }
+            });
             const subType = signal % 4;
             const remainingSignal = signal >> 2;
-            consoleLog(subType);
 
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
