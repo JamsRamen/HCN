@@ -5,7 +5,7 @@ import { SPECS } from 'battlecode';
 const findNearest = Nav.findNearest;
 
 class Pilgrim extends Role {
-    constructor (context, spawnSignal, subTypes) {
+    constructor (context, spawnSignal, subType) {
         super(context, spawnSignal, subType);
         
         // TODO: spawn signal interpretation maybe

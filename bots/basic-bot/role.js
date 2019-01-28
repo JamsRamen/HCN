@@ -251,6 +251,7 @@ class Role {
     pingCastle(type, value) {
         if (this.pingedCastle)
             return undefined;
+        consoleLog(type + " " + value);
         this.pingedCastle = true;
         this.castleTalk(value * (1 << Config.CASTLE_TALK.TYPE_BITS) + type);
     }
