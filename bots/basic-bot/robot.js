@@ -31,12 +31,13 @@ class MyRobot extends BCAbstractRobot {
             });
             const subType = signal % 4;
             const remainingSignal = signal >> 2;
+            consoleLog(subType);
 
             switch (this.me.unit) {
                 case SPECS.CRUSADER:
                     if (subType === 0)
                         this.unit = new AttackCrusader(this, remainingSignal, subType);
-                    else if (subType === 1)
+                    else
                         this.unit = new DefenseCrusader(this, remainingSignal, subType);
                     break;
                 case SPECS.PILGRIM:
@@ -45,13 +46,13 @@ class MyRobot extends BCAbstractRobot {
                 case SPECS.PROPHET:
                     if (subType === 0)
                         this.unit = new AttackProphet(this, remainingSignal, subType);
-                    else if (subType === 1)
+                    else
                         this.unit = new DefenseProphet(this, remainingSignal, subType);
                     break;
                 case SPECS.PREACHER:
                     if (subType === 0)
                         this.unit = new AttackPreacher(this, remainingSignal, subType);
-                    else if (subType === 1)
+                    else
                         this.unit = new DefensePreacher(this, remainingSignal, subType);
                     break;
                 case SPECS.CHURCH:
