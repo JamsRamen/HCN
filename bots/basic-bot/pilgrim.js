@@ -19,7 +19,7 @@ class Pilgrim extends Role {
         this.isOpenMine = (cart, loc) => cart.isMine(loc) && cart.isOpen(loc);
         this.dest = findNearest(this.me.pos, this.SPEED, this.cartography, this.isOpenMine);
         
-        // TODO: select mines based on karbonite
+        // TODO: select mines based on karbonite and fuel reserves
     }
     decide() {
         if (this.isAtCapacity()) {
@@ -31,6 +31,7 @@ class Pilgrim extends Role {
             return result;
         }
         // TODO: church building
+        // TODO: stop fidgeting
         
         if (this.dest !== undefined && this.cartography.isMine(this.dest) && this.me.pos.equals(this.dest)) {
             return this.mine();
