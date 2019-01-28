@@ -2,11 +2,11 @@ import Role from './role.js';
 import Nav from './nav.js';
 import { SPECS } from 'battlecode';
 
-const findNearestMine = Nav.findNearestMine;
+const findNearest = Nav.findNearest;
 
 class Pilgrim extends Role {
-    constructor (context, spawnSignal) {
-        super(context, spawnSignal);
+    constructor (context, spawnSignal, subTypes) {
+        super(context, spawnSignal, subType);
         
         // TODO: spawn signal interpretation maybe
         
@@ -16,8 +16,8 @@ class Pilgrim extends Role {
             if (robot.unit === SPECS.CASTLE && this.me.team === robot.team)
                 this.castleLocations.push(robot.pos);
         });
-        
-        this.dest = findNearestMine(this.me.pos, this.SPEED, this.cartography);
+        this.isOpenMine = (cart, loc) => cart.isMine(loc) && cart.isOpen(loc);
+        this.dest = findNearest(this.me.pos, this.SPEED, this.cartography, this.isOpenMine);
     }
     decide() {
         if (this.isAtCapacity()) {
@@ -33,7 +33,7 @@ class Pilgrim extends Role {
             return this.mine();
         }
         if (this.dest === undefined || !this.cartography.isMine(this.dest) || !this.cartography.isOpen(this.dest)) {
-            this.dest = findNearestMine(this.me.pos, this.SPEED, this.cartography);
+            this.dest = findNearest(this.me.pos, this.SPEED, this.cartography, this.isOpenMine);
         }
         if (this.dest === undefined) {
             return undefined;

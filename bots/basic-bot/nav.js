@@ -60,14 +60,14 @@ function findPassablePathsFrom(location, movementSpeed, cartography) {
     return result;
 }
 
-function findNearestMine(location, movementSpeed, cartography) {
+function findNearest(location, movementSpeed, cartography, condition) {
     const deltas = getCircle(movementSpeed);
     const queue = new LinkedList();
     const visited = {};
     queue.pushBack(location);
     while (queue.size() != 0) {
         const currentLocation = queue.popFront();
-        if (cartography.isMine(currentLocation) && cartography.isOpen(currentLocation))
+        if (condition(cartography, currentLocation))
             return currentLocation;
         deltas.forEach(delta => {
             const nextLocation = currentLocation.add(delta);
@@ -85,5 +85,5 @@ function findNearestMine(location, movementSpeed, cartography) {
 export default {
     findPossibleOpponentCastles,
     findPassablePathsFrom,
-    findNearestMine
+    findNearest
 };
